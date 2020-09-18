@@ -11,7 +11,13 @@ namespace Model
 
         public Track NextTrack()
         {
-            return null;
+            Track t = tracks.Dequeue();
+            // This might be redundant 
+            if ( t == null)
+            {
+                return null;
+            }
+            return t;
         }
     }
 }
