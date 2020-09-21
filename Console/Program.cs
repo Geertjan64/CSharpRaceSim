@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Controller;
+using Model;
+using System;
+using System.Threading;
 
 namespace ConsoleApp
 {
@@ -6,7 +9,14 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("");
+            Data.Initialize();
+            Data.NextRace();
+            Console.WriteLine(Data.CurrentRace?.Track.Name);
+            for(; ; )
+            {
+                Thread.Sleep(100); 
+            }
+
         }
     }
 }

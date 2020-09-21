@@ -9,15 +9,22 @@ namespace Model
         public List<IParticpant> particpants { get; set; }
         public Queue<Track> tracks{ get; set; }
 
+
+        public Competition() {
+            particpants = new List<IParticpant>();
+            tracks = new Queue<Track>();
+        }
+
         public Track NextTrack()
         {
-            Track t = tracks.Dequeue();
-            // This might be redundant 
-            if ( t == null)
+            try
+            {
+                return tracks.Dequeue();
+            } catch (InvalidOperationException e)
             {
                 return null;
             }
-            return t;
+            
         }
     }
 }

@@ -10,7 +10,8 @@ namespace Model
         public LinkedList<Section> Sections { get; set; }
         public Track(string name, SectionTypes[] sections)
         {
-
+            this.Name = name;
+          
         }
     }
 }

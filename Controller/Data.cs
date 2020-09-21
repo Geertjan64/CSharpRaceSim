@@ -5,15 +5,21 @@ using Model;
 
 namespace Controller
 {
-    static class Data
+    public static class Data
     {
         public static Competition Competition { get; set; }
         public static Race CurrentRace { get; set; }
 
         public static void Initialize()
         {
-            Data.Competition = new Competition();
-            Data.AddParticipant();
+            Competition = new Competition();
+            AddParticipant();
+            
+            
+            AddTrack();
+            AddTrack();
+            AddTrack();
+
         }
 
 

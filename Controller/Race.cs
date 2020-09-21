@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Controller
 {
-    class Race
+    public class Race
     {
         // Track van het type Track, Participants van het type List<IParticipant> en StartTime van het type DateTime
-        private Track Track;
+        public Track Track;
         private List<IParticpant> Particpants;
         private DateTime StartTime;
         private Random _random;
