@@ -25,5 +25,16 @@ namespace ControllerTest
 
         }
 
+        [Test]
+        public void NextTrack_OneInQueue_ReturnTrack()
+        {
+            var track = new Track("Mijn track", new SectionTypes[1]);
+            _competition.tracks.Enqueue(track);
+
+            Track result = _competition.NextTrack();
+
+            Assert.AreEqual(track, result);
+        }
+
     }
 }
