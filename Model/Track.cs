@@ -10,8 +10,22 @@ namespace Model
         public LinkedList<Section> Sections { get; set; }
         public Track(string name, SectionTypes[] sections)
         {
-            this.Name = name;
-          
+            Name = name;
+            Sections = SectionTypeArrayToList(sections);
+        }
+
+        public LinkedList<Section> SectionTypeArrayToList(SectionTypes[] sectionTypesArray)
+        {
+            var result = new  LinkedList<Section>();
+
+            foreach (SectionTypes sectionType in sectionTypesArray)
+            {
+                var temp = new Section();
+                temp.SectionType = sectionType;
+                result.AddLast(temp);
+            }
+
+            return result;
         }
     }
 }
