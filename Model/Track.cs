@@ -33,9 +33,9 @@ namespace Model
 
 public enum SectionTypes
 {
+    StartGrid,
     Straight,
     LeftCorner,
     RightCorner,
-    StartGrid,
     Finish
 }

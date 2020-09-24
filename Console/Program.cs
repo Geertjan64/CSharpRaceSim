@@ -11,7 +11,8 @@ namespace ConsoleApp
         {
             Data.Initialize();
             Data.NextRace();
-            Console.WriteLine(Data.CurrentRace?.Track.Name);
+            Visualize.Initialize();
+            Visualize.DrawTrack(Data.CurrentRace?.Track);
             for(; ; )
             {
                 Thread.Sleep(100); 

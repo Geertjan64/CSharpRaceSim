@@ -15,13 +15,8 @@ namespace Controller
             Competition = new Competition();
             AddParticipant();
             
-            
             AddTrack();
-            AddTrack();
-            AddTrack();
-
         }
-
 
         public static void AddParticipant()
         {
@@ -30,7 +25,23 @@ namespace Controller
 
         public static void AddTrack()
         {
-            Data.Competition.tracks.Enqueue(new Track($"T{Data.Competition.tracks.Count + 1 }", new SectionTypes[3] )); 
+            Data.Competition.tracks.Enqueue(
+                new Track($"T{Data.Competition.tracks.Count + 1 }", 
+                new SectionTypes[12] {
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.StartGrid,
+                    SectionTypes.Straight,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.Finish,
+                    SectionTypes.Straight,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight
+                    } 
+                )); 
         }
 
         public static void NextRace()
