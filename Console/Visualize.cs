@@ -12,104 +12,19 @@ namespace ConsoleApp
 
     public static class Visualize
     {
-        #region graphics
-            /* Horizontal graphics */
-            private static readonly string[] _finishHorizontal = new string[] 
-            { 
-                "----",
-                "#",
-                "#",
-                "#",
-                "----" 
-            };
-            private static readonly string[] _startGridHorizontal = new string[] 
-            {
-                "----",
-                "▓",
-                "▓",
-                "▓", 
-                "----"
-            };
-            private static readonly string[] _straightHorizontal = new string[] 
-            { 
-                "----",
-                "",
-                "-",
-                "",
-                "----" 
-            };
-
-            private static readonly string[] _leftCornerHorizontal = new string[] {
-                " /-----",
-                "/      ",
-                "|      ",
-                "|      ",
-                "|      " 
-            };
-            private static readonly string[] _rightCornerHorizontal = new string[] 
-            {
-                "-----\\ ",
-                "      \\",
-                "      |",
-                "      |",
-                "      |"
-            };
-
-            /* Vertical graphics*/
-            private static readonly string[] _finishVertical = new string[] 
-            { 
+      
 
 
-                "|###|",
-                "|   |",
-                "|   |",
-                "|   |" 
-            };
-            private static readonly string[] _startGridVertical = new string[] {
-                "|〓〓〓|",
-                "|   |",
-                "|   |",
-                "|   |"
-            };
-            private static readonly string[] _straightVertical= new string[]
-            { 
-                "|  |  |",
-                "|     |",
-                "|     |",
-                "|  |  |"
-
-             };
-
-            private static readonly string[] _leftCornerVertical = new string[] 
-            {
-                "------\\",
-                "      \\",
-                "      |",
-                "      |",
-                "      |"
-            };
-            private static readonly string[] _rightCornerVertical = new string[] 
-            {
-                "/------",
-                "/      ",
-                "|      ",
-                "|      ",
-                "|      "
-            };
-        #endregion
-
-        private static int cursor_start_x;
-        private static int cursor_start_y;
-        private static Heading current_heading;
-        private static Heading last_heading;
+        private static (int x, int y) cursor_start_position;
+        private static (Heading last, Heading current) MyHeadings;
         public delegate String[] chooseArtHeading();
 
         public static void Initialize()
         {
-            cursor_start_x = 0;
-            cursor_start_y = 0;
-            current_heading = Heading.Nord;
-            last_heading = current_heading;
+            cursor_start_position.x = 0;
+            cursor_start_position.y = 0;
+            MyHeadings.current = Heading.Nord;
+            MyHeadings.last = MyHeadings.current;
         }
         public static void DrawTrack (Track t)
         {
@@ -128,30 +43,30 @@ namespace ConsoleApp
                 case SectionTypes.LeftCorner:
                     ChangeHeading(ref type);
                     DrawArt(() => {
-                        if( last_heading == Heading.East && current_heading == Heading.South)
+                        if( MyHeadings.last == Heading.East && MyHeadings.current == Heading.South)
                         {
-                            return _rightCornerHorizontal;
+                            return Graphics._rightCornerHorizontal;
                         }
-                        if ( last_heading == Heading.West && current_heading == Heading.South)
+                        if ( MyHeadings.last == Heading.West && MyHeadings.current == Heading.South)
                         {
-                            return _leftCornerHorizontal;
+                            return Graphics._leftCornerHorizontal;
                         }
-                        if ( last_heading == Heading.East && current_heading == Heading.Nord)
+                        if ( MyHeadings.last == Heading.East && MyHeadings.current == Heading.Nord)
                         {
-                            return _leftCornerHorizontal;
+                            return Graphics._leftCornerHorizontal;
                         }
-                        if ( last_heading == Heading.West && current_heading == Heading.Nord)
+                        if ( MyHeadings.last == Heading.West && MyHeadings.current == Heading.Nord)
                         {
-                            return _rightCornerHorizontal;
+                            return Graphics._rightCornerHorizontal;
                         }
-                        return _leftCornerHorizontal;
+                        return Graphics._leftCornerHorizontal;
                     });
                     break;
 
                 case SectionTypes.RightCorner:
                     ChangeHeading(ref type);
                     DrawArt(() => {
-                        return _rightCornerHorizontal;
+                        return Graphics._rightCornerHorizontal;
                     });
 
                     break;
@@ -159,16 +74,16 @@ namespace ConsoleApp
                 case SectionTypes.StartGrid:
                     DrawArt(() =>
                     {
-                        return current_heading.Equals(Heading.Nord) ||
-                               current_heading.Equals(Heading.South) ? _startGridVertical : _startGridHorizontal;
+                        return MyHeadings.current.Equals(Heading.Nord) ||
+                               MyHeadings.current.Equals(Heading.South) ? Graphics._startGridVertical : Graphics._startGridHorizontal;
                     });
 
                     break;
 
                 case SectionTypes.Straight:
                     DrawArt(() => {
-                        return current_heading.Equals(Heading.Nord) ||
-                               current_heading.Equals(Heading.South) ? _straightVertical : _straightHorizontal;
+                        return MyHeadings.current.Equals(Heading.Nord) ||
+                               MyHeadings.current.Equals(Heading.South) ? Graphics._straightVertical : Graphics._straightHorizontal;
                     });
 
                     break;
@@ -176,8 +91,8 @@ namespace ConsoleApp
                 case SectionTypes.Finish:
 
                     DrawArt(() => {
-                        return current_heading.Equals(Heading.Nord) ||
-                               current_heading.Equals(Heading.South) ? _finishVertical : _finishHorizontal;
+                        return MyHeadings.current.Equals(Heading.Nord) ||
+                               MyHeadings.current.Equals(Heading.South) ? Graphics._finishVertical : Graphics._finishHorizontal;
                     });
                     break;
 
@@ -196,21 +111,21 @@ namespace ConsoleApp
         {
             if( sectionType == SectionTypes.LeftCorner)
             {
-                last_heading = current_heading;
-                current_heading = current_heading.Equals(Heading.West) ? Heading.Nord : current_heading + 1;
+                MyHeadings.last = MyHeadings.current;
+                MyHeadings.current = MyHeadings.current.Equals(Heading.West) ? Heading.Nord : MyHeadings.current + 1;
             } 
 
             if( sectionType == SectionTypes.RightCorner)
             {
-                last_heading = current_heading;
-                current_heading = current_heading.Equals(Heading.Nord)? Heading.West : current_heading - 1;
+                MyHeadings.last = MyHeadings.current;
+                MyHeadings.current = MyHeadings.current.Equals(Heading.Nord)? Heading.West : MyHeadings.current - 1;
             }
         }
 
         private static void DrawArt(chooseArtHeading chooseArt)
         {
             string[] Art = chooseArt();
-            if (last_heading == Heading.South || last_heading == Heading.West ) 
+            if (MyHeadings.last == Heading.South || MyHeadings.last == Heading.West ) 
             {
                 // draw upside down
                 int line = 0;
@@ -221,8 +136,8 @@ namespace ConsoleApp
 
                 while ( stack.Count > 0)
                 {
-                    Console.SetCursorPosition(cursor_start_x, cursor_start_y + line);
-                    if ( last_heading == Heading.East) {
+                    Console.SetCursorPosition(cursor_start_position.x, cursor_start_position.y + line);
+                    if ( MyHeadings.last == Heading.East) {
                         Console.Write(stack.Pop());
                     }else
                     {
@@ -237,7 +152,7 @@ namespace ConsoleApp
                 int line = 0;
                 foreach (string s in Art)
                 {
-                    Console.SetCursorPosition(cursor_start_x, cursor_start_y + line);
+                    Console.SetCursorPosition(cursor_start_position.x, cursor_start_position.y + line);
                     Console.Write(s);
                     line++;
                 }
@@ -245,25 +160,25 @@ namespace ConsoleApp
             }
 
             // what will be the next cursor start position ?
-            switch (current_heading)
+            switch (MyHeadings.current)
             {
                 case Heading.South:
-                    cursor_start_y += 5;
+                    cursor_start_position.y += 5;
                     break;
                 case Heading.Nord:
-                    cursor_start_y -= 5;
+                    cursor_start_position.y -= 5;
                     break;
                 case Heading.East:
-                    cursor_start_x += 5;
+                    cursor_start_position.x += 5;
                     break;
                 case Heading.West:
-                    cursor_start_x -= 5;
+                    cursor_start_position.x -= 5;
                     break;
             }
 
        
 
-            Console.SetCursorPosition( cursor_start_x, cursor_start_y);
+            Console.SetCursorPosition( cursor_start_position.x , cursor_start_position.y );
         }
 
         private  enum Heading {
