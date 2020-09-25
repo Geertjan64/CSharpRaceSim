@@ -22,23 +22,40 @@ namespace Controller
         {
             Data.Competition.particpants.Add(new Driver());
         }
-
+        
         public static void AddTrack()
         {
             Data.Competition.tracks.Enqueue(
                 new Track($"T{Data.Competition.tracks.Count + 1 }", 
-                new SectionTypes[12] {
+                new SectionTypes[22] {
                     SectionTypes.LeftCorner,
+
                     SectionTypes.Straight,
                     SectionTypes.StartGrid,
+                    SectionTypes.StartGrid,
+                    SectionTypes.StartGrid,
+                    SectionTypes.StartGrid,
                     SectionTypes.Straight,
-                    SectionTypes.LeftCorner,
                     SectionTypes.Straight,
+                    
                     SectionTypes.LeftCorner,
+
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    
+                    SectionTypes.LeftCorner,
+
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
                     SectionTypes.Straight,
                     SectionTypes.Finish,
                     SectionTypes.Straight,
+                    
                     SectionTypes.LeftCorner,
+                    
+                    SectionTypes.Straight,
                     SectionTypes.Straight
                     } 
                 )); 

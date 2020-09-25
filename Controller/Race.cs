@@ -20,13 +20,49 @@ namespace Controller
             this.Track = track;
             this.Particpants = particpants;
             this._random = new Random(DateTime.Now.Millisecond);
+            this._positions = new Dictionary<Section, SectionData>();
+        }
+
+
+        public void PlaceParticipants()
+        {
+            Stack<Section> StartingGrid = new Stack<Section>();
+            
+            foreach(Section section in Track.Sections)
+            {
+                if( section.SectionType == SectionTypes.StartGrid)
+                {
+                    StartingGrid.Push(section);
+                }
+            }
+
+
+            int Participantcount = 0;
+            while ( StartingGrid.Count > 0 )
+            {
+                Section s = StartingGrid.Pop();
+                SectionData data = GetSectionData(s);
+
+                if (Particpants.Count - Participantcount > 0)
+                {
+                    data.Left = Particpants[Participantcount];
+                    Participantcount++;
+                }
+                if (Particpants.Count - Participantcount > 0)
+                {
+                    data.Right = Particpants[Participantcount];
+                    Participantcount++;
+                }
+                
+            }
 
         }
 
+
         public SectionData GetSectionData(Section section)
         {
-            if (_positions[section] == null)
-            {
+            if (_positions.ContainsKey(section) == false) { 
+            
                 _positions[section] = new SectionData();
             }
 
