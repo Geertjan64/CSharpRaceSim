@@ -11,6 +11,8 @@ namespace ConsoleApp
         {
             Data.Initialize();
             Data.NextRace();
+            Data.CurrentRace.PlaceParticipants();
+            Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
             Visualize.Initialize();
             Visualize.DrawTrack(Data.CurrentRace?.Track);
             for(; ; )

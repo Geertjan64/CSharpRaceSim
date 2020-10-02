@@ -13,16 +13,30 @@ namespace Controller
         public static void Initialize()
         {
             Competition = new Competition();
-            AddParticipant();
-            
+            AddParticipants( 
+                new List<IParticpant>() 
+                { 
+                    new Driver("Micheal", 0, TeamColors.Blue),
+                    new Driver("Patrick", 0, TeamColors.Green),
+                    new Driver("Daniel", 0, TeamColors.Red)
+                });
             AddTrack();
         }
 
         public static void AddParticipant()
         {
-            Data.Competition.particpants.Add(new Driver());
+            // TODO: Generate Random name 
+            Data.Competition.particpants.Add(new Driver("Micheal", 0,  TeamColors.Blue));
         }
         
+        public static void AddParticipants(IEnumerable<IParticpant> particpants)
+        {
+            foreach ( IParticpant particpant in particpants)
+            {
+                Data.Competition.particpants.Add(particpant);
+            }
+        }
+
         public static void AddTrack()
         {
             Data.Competition.tracks.Enqueue(
@@ -66,7 +80,7 @@ namespace Controller
             Track t = Competition.NextTrack();
             if (t != null)
             {
-                CurrentRace = new Race(t, new List<IParticpant>());
+                CurrentRace = new Race(t, Data.Competition.particpants);
             }
         }
     }
