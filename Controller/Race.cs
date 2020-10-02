@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Timers;
 
 namespace Controller
 {
@@ -13,17 +14,30 @@ namespace Controller
         private DateTime StartTime;
         private Random _random;
         private Dictionary<Section, SectionData> _positions;
+        private Timer _timer;
 
         // Deze constructor heeft als parameters: Track en List<IParticipant>. Gebruik de parameters om de waarden van de properties Track en Participants te zetten.
         public Race(Track track, List<IParticpant> particpants)
         {
-            this.Track = track;
-            this.Particpants = particpants;
-            this._random = new Random(DateTime.Now.Millisecond);
-            this._positions = new Dictionary<Section, SectionData>();
+            Track = track;
+            Particpants = particpants;
+            _random = new Random(DateTime.Now.Millisecond);
+            _positions = new Dictionary<Section, SectionData>();
+            _timer = new Timer(500);
+            _timer.Elapsed += OnTimedEvent;
         }
 
+        public  void Start()
+        {
+            _timer.AutoReset = true;
+            _timer.Enabled = true;
+        }
 
+        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            Console.SetCursorPosition(0, 25);
+            Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
+        }
         public void PlaceParticipants()
         {
             Stack<Section> StartingGrid = new Stack<Section>();

@@ -15,6 +15,7 @@ namespace ConsoleApp
             Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
             Visualize.Initialize();
             Visualize.DrawTrack(Data.CurrentRace?.Track);
+            Data.CurrentRace.Start();
             for(; ; )
             {
                 Thread.Sleep(100); 

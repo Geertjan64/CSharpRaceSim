@@ -38,8 +38,8 @@ namespace ControllerTest
 
                     }));
 
-            _competition.particpants.Add(new Driver());
-            _competition.particpants.Add(new Driver());
+            _competition.particpants.Add(new Driver("a", 0, TeamColors.Red));
+            _competition.particpants.Add(new Driver("b", 0, TeamColors.Blue));
 
             _race = new Race(_competition.NextTrack(), _competition.particpants);
 
