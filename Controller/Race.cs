@@ -15,6 +15,8 @@ namespace Controller
         private Random _random;
         private Dictionary<Section, SectionData> _positions;
         private Timer _timer;
+        public event OnDriversChanged DriversChanged;
+        public delegate void OnDriversChanged (object sender, DriversChangedEventArgs e );
 
         // Deze constructor heeft als parameters: Track en List<IParticipant>. Gebruik de parameters om de waarden van de properties Track en Participants te zetten.
         public Race(Track track, List<IParticpant> particpants)

@@ -38,7 +38,13 @@ namespace ConsoleApp
             ParticipantPlaceholder = 1;
 
             sectionsToRender = new List<DrawableSection>();
+            Data.CurrentRace.DriversChanged += OnDriversChanged;
 
+        }
+
+        public static void OnDriversChanged(object sender, DriversChangedEventArgs args)
+        {
+            DrawTrack(args.track);
         }
 
         public static void DrawTrack (Track t)
