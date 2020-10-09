@@ -1,6 +1,8 @@
-﻿using Model;
+﻿using Microsoft.VisualBasic.FileIO;
+using Model;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Timers;
 
@@ -37,9 +39,73 @@ namespace Controller
 
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
+            //Show time
             Console.SetCursorPosition(0, 25);
             Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
+
+            moveParticipants();
+            Data.CurrentRace.DriversChanged.Invoke(Data.CurrentRace, new DriversChangedEventArgs(Data.CurrentRace.Track));
+
         }
+
+        public static void moveParticipants()
+        {
+            // IMPORTANT: the leading participant in the race should be moved first.
+            // step 1 figure out where all participants are on the track
+            // step 2 check if they have been on the track long enough to go to the next 
+            // step 3 check if the next track has an empty spot.
+            // step 4 if not it stay where it is , if there is move to that spot
+            // step 5 render the tracks that have changed 
+
+            var sections_with_player = new Stack<Section>();
+            var data_lib = new Dictionary<Section, SectionData>();
+
+            foreach (Section sec in Data.CurrentRace.Track.Sections)
+            {
+                SectionData data = Data.CurrentRace.GetSectionData(sec);
+                if (data.Left != null || data.Right != null)
+                {
+                    sections_with_player.Push(sec);
+                    data_lib.Add(sec, data);
+                }
+            }
+
+            while (sections_with_player.Count > 0)
+            {
+                // Current section with its section data. 
+                Section section = sections_with_player.Pop();
+                SectionData data = data_lib[section];
+
+                // 
+                Track CurrentTrack = Data.CurrentRace.Track;
+
+                // next section with its section data.
+                Section nextSection = CurrentTrack.Sections.Find(section)?.Next?.Value;
+                // Might indicicate we were on the last section 
+                if (nextSection == null)
+                    continue;
+                SectionData nextSection_data = Data.CurrentRace.GetSectionData(nextSection);
+
+
+                if (data.DistanceLeft == 0 && nextSection_data.Left == null)
+                {
+
+                    // lets move left 
+                    nextSection_data.Left = data.Left;
+                    data.Left = null;
+                }
+
+                if (data.DistanceRight == 0 && nextSection_data.Right == null)
+                {
+                    nextSection_data.Right = data.Right;
+                    data.Right = null;
+                }
+
+            }
+
+            Data.CurrentRace.DriversChanged.Invoke(Data.CurrentRace, new DriversChangedEventArgs(Data.CurrentRace.Track));
+        }
+
         public void PlaceParticipants()
         {
             Stack<Section> StartingGrid = new Stack<Section>();

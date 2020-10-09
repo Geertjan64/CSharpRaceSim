@@ -29,22 +29,58 @@ namespace ConsoleApp
         
         public static void Initialize()
         {
-            cursor_start_position.x = 0;
-            cursor_start_position.y = 3;
-            
-            MyHeadings.current = Heading.Nord;
-            MyHeadings.last = MyHeadings.current;
-            
-            ParticipantPlaceholder = 1;
+            Console.CursorVisible = false;
 
-            sectionsToRender = new List<DrawableSection>();
+            resetRenderer();
+          
             Data.CurrentRace.DriversChanged += OnDriversChanged;
 
+            Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
+            Console.WriteLine($"Racing on Track {Data.CurrentRace.Track.Name}");
+            visualize_carStats_per_driver();
+        }
+
+        private static void visualize_carStats_per_driver()
+        {
+
+            // Show stats
+            int x = Console.BufferWidth - 10;
+            int y = 25;
+            foreach (Driver d in Data.Competition.particpants)
+            {
+                Console.SetCursorPosition(x, y);
+                Console.WriteLine($"\nCar stats ({d.Name}):");
+                Console.WriteLine($"Performance: { d.Equipment.Performance}");
+                Console.WriteLine($"Quality: { d.Equipment.Quality}");
+                Console.WriteLine($"Speed: { d.Equipment.Speed}");
+                Console.WriteLine($"Car Velocity : { ((Car)d.Equipment).getCarVelocity()}");
+              
+                y += 6;
+            }
         }
 
         public static void OnDriversChanged(object sender, DriversChangedEventArgs args)
         {
+            Console_Extension.DrawText((0, 50), $"OnDriversChanged in Visualize! { DateTime.Now}");
             DrawTrack(args.track);
+        }
+
+        private static void placePlaceholderParticipantsOnTrack()
+        {
+
+            // place placholders for participants on track 
+            Stack<DrawableSection> StartGrids;
+            GetStartGrids(out StartGrids);
+   
+
+            while (StartGrids.Count > 0)
+            {
+                DrawableSection ds = StartGrids.Pop();
+                drawPlaceholderOnStartgrid(ref ds);
+
+                ds.Draw();
+            }
+
         }
 
         public static void DrawTrack (Track t)
@@ -60,6 +96,7 @@ namespace ConsoleApp
                 string[] text;
                 PickSectionGraphic(s, out text);
                 drawable.asciiArt = text;
+
                 // what will be the next cursor start position ?
                 switch (MyHeadings.current)
                 {
@@ -77,45 +114,61 @@ namespace ConsoleApp
                         break;
                 }
 
-
                 drawable.Draw();
                 sectionsToRender.Add(drawable);
-
+                
             }
 
-            // place placholders for participants on track 
-            var StartGrids = new Stack<DrawableSection>();
-            foreach (var drawable  in sectionsToRender)
+            placePlaceholderParticipantsOnTrack();
+
+            DrawParticipantsOnTrack(sectionsToRender);
+
+            resetRenderer();
+
+            
+        }
+
+        private static void resetRenderer()
+        {
+            if( sectionsToRender != null)
+            {
+                sectionsToRender.Clear();
+
+            }
+            else
+            {
+                sectionsToRender = new List<DrawableSection>();
+            }
+            cursor_start_position = (0, 3);
+            MyHeadings.current = Heading.Nord;
+            MyHeadings.last = MyHeadings.current;
+            ParticipantPlaceholder = 1;
+        }
+
+        private static void GetStartGrids(out Stack<DrawableSection> StartGrids)
+        {
+            StartGrids = new Stack<DrawableSection>();
+            foreach (var drawable in sectionsToRender)
             {
                 if (drawable.section.SectionType == SectionTypes.StartGrid)
                     StartGrids.Push(drawable);
             }
-            Stack<DrawableSection> StartSections;
-            StartGrids.copyToNewStack(out StartSections);
+        }
 
-            while (StartGrids.Count > 0)
+        private static void DrawParticipantsOnTrack(List<DrawableSection> sections)
+        {
+            foreach ( DrawableSection ds in sections)
             {
-                DrawableSection ds = StartGrids.Pop();
-                drawPlaceholderOnStartgrid(ref ds );
-
-                ds.Draw();
-            }
-
-            // Place participant
-            while ( StartSections.Count > 0)
-            {
-                DrawableSection ds = StartSections.Pop();
                 SectionData sd = Data.CurrentRace.GetSectionData(ds.section);
-                if( sd.Left != null)
+                if (sd.Left != null)
                 {
                     // Draw particpant on left (index 1)
-                    
                     char[] temp = ds.asciiArt[1].ToCharArray();
                     temp[3] = sd.Left.Name[0];
                     ds.asciiArt[1] = new string(temp);
-                    
+
                 }
-                if( sd.Right != null)
+                if (sd.Right != null)
                 {
                     // Draw particpant on right (index 3) 
 
@@ -123,23 +176,17 @@ namespace ConsoleApp
                     temp[3] = sd.Right.Name[0];
                     ds.asciiArt[3] = new string(temp);
                 }
+                else
+                {
+                    string[] graphic ;
+                    PickSectionGraphic(ds.section, out graphic);
+                    ds.asciiArt = graphic;
+                }
+            
                 ds.Draw();
-            }   
-
-        }
-
-
-
-        private static void copyToNewStack ( this Stack<DrawableSection> drawableSections , out Stack<DrawableSection> newStack ){
-            newStack = new Stack<DrawableSection>();
-            var temp = new DrawableSection[drawableSections.Count];
-            drawableSections.CopyTo(temp, 0);
-            foreach ( DrawableSection ds in temp)
-            {
-                newStack.Push(ds);
             }
-           
         }
+
         private static void PickSectionGraphic (Section s, out string[] graphic )
         {
             SectionTypes type = s.SectionType;
@@ -148,7 +195,7 @@ namespace ConsoleApp
 
                 case SectionTypes.LeftCorner:
                     ChangeHeading(ref type);
-                    graphic = orientateGraphic(() => {
+                    graphic = (string[]) orientateGraphic(() => {
                         if( MyHeadings.last == Heading.East && MyHeadings.current == Heading.South)
                         {
                             return Graphics._rightCornerHorizontal;
@@ -165,19 +212,19 @@ namespace ConsoleApp
                         {
                             return Graphics._rightCornerHorizontal;
                         }
-                        return Graphics._leftCornerHorizontal;
-                    });
+                        return  Graphics._leftCornerHorizontal ;
+                    }).Clone();
                     break;
                     
                 case SectionTypes.RightCorner:
                     ChangeHeading(ref type);
-                    graphic =  orientateGraphic(() => {
+                    graphic = (string[]) orientateGraphic(() => {
                         return Graphics._rightCornerHorizontal;
-                    });
+                    }).Clone();
                     break;
 
                 case SectionTypes.StartGrid:
-                  graphic =  orientateGraphic(() =>
+                  graphic =  (string[]) orientateGraphic(() =>
                     {
                         string[] choosen = new string[1];
 
@@ -189,21 +236,21 @@ namespace ConsoleApp
                         }
 
                         return choosen;
-                    });
+                    }).Clone();
                     break;
 
                 case SectionTypes.Straight:
-                  graphic =  orientateGraphic(() => {
+                  graphic =  (string[]) orientateGraphic(() => {
                         return MyHeadings.current.Equals(Heading.Nord) ||
                                MyHeadings.current.Equals(Heading.South) ? Graphics._straightVertical : Graphics._straightHorizontal;
-                    });
+                    }).Clone();
                     break;
 
                 case SectionTypes.Finish:
-                  graphic = orientateGraphic(() => {
+                  graphic = (string[]) orientateGraphic(() => {
                         return MyHeadings.current.Equals(Heading.Nord) ||
                                MyHeadings.current.Equals(Heading.South) ? Graphics._finishVertical : Graphics._finishHorizontal;
-                    });
+                    }).Clone();
                     break;
 
                 default:

@@ -23,7 +23,7 @@ namespace ConsoleApp
                 "|   |"
             };
       
-        public static readonly string[] _finishVertical = new string[]
+        public static string[] _finishVertical = new string[]
         {
 
 
@@ -32,24 +32,24 @@ namespace ConsoleApp
                 "|   |",
                 "|   |"
         };
-        public static readonly string[] _finishHorizontal = new string[]
+        public static string[] _finishHorizontal = new string[]
      {
                 "----",
-                "#",
-                "#",
-                "#",
+                "#   ",
+                "#   ",
+                "#   ",
                 "----"
      };
 
-        public static readonly string[] _straightHorizontal = new string[]
+        public static string[] _straightHorizontal = new string[]
       {
                 "----",
-                "",
-                "-",
-                "",
+                "    ",
+                "  - ",
+                "    ",
                 "----"
       };
-        public static readonly string[] _straightVertical = new string[]
+        public static string[] _straightVertical = new string[]
         {
                 "|  |  |",
                 "|     |",
@@ -58,14 +58,14 @@ namespace ConsoleApp
 
          };
 
-        public static readonly string[] _leftCornerHorizontal = new string[] {
+        public static string[] _leftCornerHorizontal = new string[] {
                 " /-----",
                 "/      ",
                 "|      ",
                 "|      ",
                 "|      "
         };
-        public static readonly string[] _leftCornerVertical = new string[]
+        public static string[] _leftCornerVertical = new string[]
         {
                 "------\\",
                 "      \\",
@@ -74,7 +74,7 @@ namespace ConsoleApp
                 "      |"
         };
 
-        public static readonly string[] _rightCornerHorizontal = new string[]
+        public static string[] _rightCornerHorizontal = new string[]
         {
                 "-----\\ ",
                 "      \\",
@@ -82,7 +82,7 @@ namespace ConsoleApp
                 "      |",
                 "      |"
         };
-        public static readonly string[] _rightCornerVertical = new string[]
+        public static string[] _rightCornerVertical = new string[]
         {
                 "/------",
                 "/      ",

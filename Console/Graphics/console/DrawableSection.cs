@@ -38,13 +38,11 @@ namespace ConsoleApp
                 int cursorX = Trans.startPosition.x;
                 int cursorY = Trans.startPosition.y + line;
 
-                Console.SetCursorPosition(cursorX, cursorY);
-                Console.Write($"{s}");
-
-
+                Console_Extension.DrawText((cursorX, cursorY), $"{s}");
                 line++;
              
             }
+
         }
 
     }
