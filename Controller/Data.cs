@@ -44,27 +44,29 @@ namespace Controller
                 new SectionTypes[22] {
                     SectionTypes.LeftCorner,
 
-                    SectionTypes.Straight,
-                    SectionTypes.StartGrid,
-                    SectionTypes.StartGrid,
-                    SectionTypes.StartGrid,
-                    SectionTypes.StartGrid,
-                    SectionTypes.Straight,
-                    SectionTypes.Straight,
-                    
-                    SectionTypes.LeftCorner,
-
-                    SectionTypes.Straight,
-                    SectionTypes.Straight,
-                    
-                    SectionTypes.LeftCorner,
-
-                    SectionTypes.Straight,
-                    SectionTypes.Straight,
-                    SectionTypes.Straight,
-                    SectionTypes.Straight,
-                    SectionTypes.Straight,
                     SectionTypes.Finish,
+                    SectionTypes.StartGrid,
+                    SectionTypes.StartGrid,
+                    SectionTypes.StartGrid,
+                    SectionTypes.StartGrid,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    
+                    SectionTypes.LeftCorner,
+
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    
+                    SectionTypes.LeftCorner,
+
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+
+
                     SectionTypes.Straight,
                     
                     SectionTypes.LeftCorner,

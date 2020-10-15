@@ -1,362 +1,428 @@
 ﻿using Controller;
+using Microsoft.VisualBasic.CompilerServices;
 using Model;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ConsoleApp
 {
+    public enum Heading
+    {
+        Nord,
+        East,
+        South,
+        West
 
+    }
     public static class Visualize
     {
-        private enum Heading
+        #region Graphics
+
+        public static string[] _startGridHorizontal = new string[]
         {
-            Nord,
-            East,
-            South,
-            West
+                "---▓", // 0
+                "   ▓", // 1
+                "   ▓", // 2 
+                "   ▓", // 3
+                "---▓"  // 4
+        };
+        public static string[] _startGridVertical = new string[] {
+                "〓〓〓〓〓〓〓",
+                "|     |",
+                "|     |",
+                "|     |"
+            };
 
-        }
+        public static string[] _finishVertical = new string[]
+        {
 
-        private static List<DrawableSection> sectionsToRender;
-        private static (int x, int y) cursor_start_position;
+
+                "|#####|",
+                "|     |",
+                "|     |",
+                "|     |"
+        };
+        public static string[] _finishHorizontal = new string[]
+     {
+                "----",
+                "#   ",
+                "#   ",
+                "#   ",
+                "----"
+     };
+
+        public static string[] _straightHorizontal = new string[]
+      {
+                "----",
+                "    ",
+                "  - ",
+                "    ",
+                "----"
+      };
+        public static string[] _straightVertical = new string[]
+        {
+                "|  |  |",
+                "|     |",
+                "|     |",
+                "|  |  |"
+
+         };
+
+        // from nord
+        public static string[] _TopRightCorner = new string[] {
+                "------/",
+                "      /",
+                "      |",
+                "      |",
+                "      |"
+        };
+        
+        public static string[] _TopLeftCorner = new string[]
+        {
+                "/------",
+                "/      ",
+                "|      ",
+                "|      ",
+                "|      "
+        };
+
+        // from south 
+        public static string[] _BottomRightCorner = new string[]
+        {
+            "       |",
+            "       |",
+            "       |",
+            "       |",
+            "-------/"
+        };
+        public static string[] _BottomLeftCorner = new string[]
+        {
+            "|       ",
+            "|       ",
+            "|       ",
+            "|       ",
+            "\\-------"
+        };
+        #endregion
+
         private static (Heading last, Heading current) MyHeadings;
-        
+
         private static int ParticipantPlaceholder;
-        
-        private delegate String[] chooseArtHeading();
-        
+
         public static void Initialize()
         {
             Console.CursorVisible = false;
-
-            resetRenderer();
-          
             Data.CurrentRace.DriversChanged += OnDriversChanged;
-
-            Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
-            Console.WriteLine($"Racing on Track {Data.CurrentRace.Track.Name}");
-            visualize_carStats_per_driver();
-        }
-
-        private static void visualize_carStats_per_driver()
-        {
-
-            // Show stats
-            int x = Console.BufferWidth - 10;
-            int y = 25;
-            foreach (Driver d in Data.Competition.particpants)
-            {
-                Console.SetCursorPosition(x, y);
-                Console.WriteLine($"\nCar stats ({d.Name}):");
-                Console.WriteLine($"Performance: { d.Equipment.Performance}");
-                Console.WriteLine($"Quality: { d.Equipment.Quality}");
-                Console.WriteLine($"Speed: { d.Equipment.Speed}");
-                Console.WriteLine($"Car Velocity : { ((Car)d.Equipment).getCarVelocity()}");
-              
-                y += 6;
-            }
+            // Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
+            // Console.WriteLine($"Racing on Track {Data.CurrentRace.Track.Name}");
         }
 
         public static void OnDriversChanged(object sender, DriversChangedEventArgs args)
         {
-            Console_Extension.DrawText((0, 50), $"OnDriversChanged in Visualize! { DateTime.Now}");
+            // Console.SetCursorPosition(0, 27);
+            //  Console.Write($"OnDriversChanged in Visualize! { DateTime.Now}");
             DrawTrack(args.track);
         }
 
-        private static void placePlaceholderParticipantsOnTrack()
+        public static void DrawTrack(Track t)
         {
+            List<SectionBuildingDetails> buildingDetails = new List<SectionBuildingDetails>();
 
-            // place placholders for participants on track 
-            Stack<DrawableSection> StartGrids;
-            GetStartGrids(out StartGrids);
-   
+            FillBuildingDetails(ref buildingDetails, t);
+            ShiftPositions(buildingDetails);
+            DrawBuildingDetails(ref buildingDetails);
 
-            while (StartGrids.Count > 0)
+            // Draw Players 
+
+            foreach ( var sbd in buildingDetails)
             {
-                DrawableSection ds = StartGrids.Pop();
-                drawPlaceholderOnStartgrid(ref ds);
-
-                ds.Draw();
-            }
-
-        }
-
-        public static void DrawTrack (Track t)
-        {
-            
-            // build a drawable section list
-            foreach ( Section s in t.Sections)
-            {
-                var drawable = new DrawableSection();
-                drawable.section =s ;
-                drawable.Trans.startPosition = cursor_start_position;
-
-                string[] text;
-                PickSectionGraphic(s, out text);
-                drawable.asciiArt = text;
-
-                // what will be the next cursor start position ?
-                switch (MyHeadings.current)
-                {
-                    case Heading.South:
-                        cursor_start_position.y += 5;
-                        break;
-                    case Heading.Nord:
-                        cursor_start_position.y -= 5;
-                        break;
-                    case Heading.East:
-                        cursor_start_position.x += 5;
-                        break;
-                    case Heading.West:
-                        cursor_start_position.x -= 5;
-                        break;
-                }
-
-                drawable.Draw();
-                sectionsToRender.Add(drawable);
-                
-            }
-
-            placePlaceholderParticipantsOnTrack();
-
-            DrawParticipantsOnTrack(sectionsToRender);
-
-            resetRenderer();
-
-            
-        }
-
-        private static void resetRenderer()
-        {
-            if( sectionsToRender != null)
-            {
-                sectionsToRender.Clear();
-
-            }
-            else
-            {
-                sectionsToRender = new List<DrawableSection>();
-            }
-            cursor_start_position = (0, 3);
-            MyHeadings.current = Heading.Nord;
-            MyHeadings.last = MyHeadings.current;
-            ParticipantPlaceholder = 1;
-        }
-
-        private static void GetStartGrids(out Stack<DrawableSection> StartGrids)
-        {
-            StartGrids = new Stack<DrawableSection>();
-            foreach (var drawable in sectionsToRender)
-            {
-                if (drawable.section.SectionType == SectionTypes.StartGrid)
-                    StartGrids.Push(drawable);
-            }
-        }
-
-        private static void DrawParticipantsOnTrack(List<DrawableSection> sections)
-        {
-            foreach ( DrawableSection ds in sections)
-            {
-                SectionData sd = Data.CurrentRace.GetSectionData(ds.section);
+                SectionData sd = Data.CurrentRace.GetSectionData(sbd.section);
                 if (sd.Left != null)
                 {
-                    // Draw particpant on left (index 1)
-                    char[] temp = ds.asciiArt[1].ToCharArray();
-                    temp[3] = sd.Left.Name[0];
-                    ds.asciiArt[1] = new string(temp);
-
+                    if (sbd.direction != Heading.South || sbd.direction != Heading.Nord)
+                    {
+                        Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 2, (sbd.y * SectionBuildingDetails.SIZE_Y) + 1);
+                        Console.Write(sd.Left.Name[0]);
+                    }
+                    else
+                    {
+                        Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 1, (sbd.y * SectionBuildingDetails.SIZE_Y) + 2);
+                        Console.Write(sd.Left.Name[0]);
+                    }
                 }
+
                 if (sd.Right != null)
                 {
-                    // Draw particpant on right (index 3) 
+                    if (sbd.direction != Heading.South || sbd.direction != Heading.Nord)
+                    {
+                        Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 2, (sbd.y * SectionBuildingDetails.SIZE_Y) + 3);
+                        Console.Write(sd.Right.Name[0]);
+                    }
+                    else
+                    {
+                        Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 3, (sbd.y * SectionBuildingDetails.SIZE_Y) + 2);
+                        Console.Write(sd.Right.Name[0]);
 
-                    char[] temp = ds.asciiArt[3].ToCharArray();
-                    temp[3] = sd.Right.Name[0];
-                    ds.asciiArt[3] = new string(temp);
+                    }
                 }
-                else
+            }
+
+        }
+        private static void FillBuildingDetails(ref List<SectionBuildingDetails> buildingDetails, Track t)
+        {
+            int x = 0;
+            int y = 0;
+            Heading current = Heading.South;
+            Heading last = current;
+
+            foreach (Section sec in Data.CurrentRace.Track.Sections)
+            {
+                var a = new SectionBuildingDetails() { section = sec, x = x, y = y };
+                // Determine its heading
+                if (sec.SectionType == SectionTypes.LeftCorner)
                 {
-                    string[] graphic ;
-                    PickSectionGraphic(ds.section, out graphic);
-                    ds.asciiArt = graphic;
+                    last = current;
+
+                    if (current == Heading.West)
+                    {
+                        current = Heading.Nord;
+                    }
+                    else
+                    {
+
+                        current++;
+                    }
                 }
-            
-                ds.Draw();
+                if (sec.SectionType == SectionTypes.RightCorner)
+                {
+                    last = current;
+
+                    if (current == Heading.Nord)
+                    {
+                        current = Heading.West;
+                    }
+                    else
+                    {
+                        current--;
+                    }
+                }
+
+                a.direction = current;
+                a.lastDirection = last;
+
+                buildingDetails.Add(a);
+
+                // Move position values based on the direction 
+                switch (current)
+                {
+                    case (Heading.Nord):
+                        y++;
+                        break;
+                    case (Heading.East):
+                        x++;
+                        break;
+                    case (Heading.South):
+                        y--;
+                        break;
+                    case (Heading.West):
+                        x--;
+                        break;
+                };
+
+
+
+            }
+
+        }
+
+        private static void ShiftPositions(List<SectionBuildingDetails> buildingDetails)
+        {
+            int offsetX = getLowestXValue(ref buildingDetails);
+            int offsetY = getLowestYValue(ref buildingDetails);
+
+            for (int i = 0; i < buildingDetails.Count; i++) {
+                SectionBuildingDetails bd = buildingDetails[i];
+                int real_x = buildingDetails[i].x + Math.Abs(offsetX);
+                int real_y = buildingDetails[i].y + Math.Abs(offsetY);
+                bd.x = real_x;
+                bd.y = real_y;
+
+                buildingDetails[i] = bd;
             }
         }
 
-        private static void PickSectionGraphic (Section s, out string[] graphic )
+        private static int getLowestXValue(ref List<SectionBuildingDetails> buildingDetails)
         {
-            SectionTypes type = s.SectionType;
-            switch (type)
+            int lowestValue = buildingDetails[0].x;
+            foreach (SectionBuildingDetails bd in buildingDetails)
             {
+                if (bd.x < lowestValue)
+                    lowestValue = bd.x;
+            }
+            return lowestValue;
+        }
+        private static int getLowestYValue(ref List<SectionBuildingDetails> buildingDetails)
+        {
+            int lowestValue = buildingDetails[0].y;
+            foreach (SectionBuildingDetails bd in buildingDetails)
+            {
+                if (bd.y < lowestValue)
+                    lowestValue = bd.y;
+            }
+            return lowestValue;
+        }
 
-                case SectionTypes.LeftCorner:
-                    ChangeHeading(ref type);
-                    graphic = (string[]) orientateGraphic(() => {
-                        if( MyHeadings.last == Heading.East && MyHeadings.current == Heading.South)
-                        {
-                            return Graphics._rightCornerHorizontal;
-                        }
-                        if ( MyHeadings.last == Heading.West && MyHeadings.current == Heading.South)
-                        {
-                            return Graphics._leftCornerHorizontal;
-                        }
-                        if ( MyHeadings.last == Heading.East && MyHeadings.current == Heading.Nord)
-                        {
-                            return Graphics._leftCornerHorizontal;
-                        }
-                        if ( MyHeadings.last == Heading.West && MyHeadings.current == Heading.Nord)
-                        {
-                            return Graphics._rightCornerHorizontal;
-                        }
-                        return  Graphics._leftCornerHorizontal ;
-                    }).Clone();
-                    break;
-                    
-                case SectionTypes.RightCorner:
-                    ChangeHeading(ref type);
-                    graphic = (string[]) orientateGraphic(() => {
-                        return Graphics._rightCornerHorizontal;
-                    }).Clone();
-                    break;
-
-                case SectionTypes.StartGrid:
-                  graphic =  (string[]) orientateGraphic(() =>
+        private static void DrawBuildingDetails(ref List<SectionBuildingDetails> buildingDetails)
+        {
+            foreach (var bd in buildingDetails)
+            {
+                drawSection(bd);
+            }
+        }
+         
+        private static void drawSection( SectionBuildingDetails details)
+        {
+            SectionTypes sectionType = details.section.SectionType;
+            (int x, int y) pos = (details.x * SectionBuildingDetails.SIZE_X, details.y * SectionBuildingDetails.SIZE_Y);
+           if ( sectionType == SectionTypes.RightCorner || sectionType == SectionTypes.LeftCorner)
+            {
+                if (details.direction == Heading.East) {
+                    if (details.lastDirection == Heading.Nord)
                     {
-                        string[] choosen = new string[1];
+                        drawToConsole(_BottomLeftCorner, pos);
+                    }
 
-                        if (MyHeadings.current.Equals(Heading.Nord) || MyHeadings.current.Equals(Heading.South)) {
-                            choosen= Graphics._startGridVertical;
-                        }else
-                        {
-                            choosen = Graphics._startGridHorizontal;
-                        }
+                    if (details.lastDirection == Heading.South)
+                    {  
+                        drawToConsole(_TopLeftCorner, pos);
+                    }
 
-                        return choosen;
-                    }).Clone();
+                }
+                
+                if( details.direction == Heading.Nord)
+                {
+                    if (details.lastDirection == Heading.East)
+                    {
+                        drawToConsole(_TopRightCorner, pos);
+                    }
+
+                    if (details.lastDirection == Heading.West)
+                    {
+                        drawToConsole(_TopLeftCorner, pos);
+                    }
+                }
+
+                if( details.direction == Heading.South)
+                {
+                    if (details.lastDirection == Heading.East)
+                    {
+                        drawToConsole(_BottomRightCorner, pos);
+                    }
+
+                    if (details.lastDirection == Heading.West)
+                    {
+                        drawToConsole(_BottomLeftCorner, pos);
+                    }
+                }
+
+                if( details.direction == Heading.West)
+                {
+                    if (details.lastDirection == Heading.Nord)
+                    {
+                        drawToConsole(_BottomRightCorner, pos);
+                    }
+
+                    if (details.lastDirection == Heading.South)
+                    {
+                        drawToConsole(_TopRightCorner, pos);
+                    }
+                }
+            }
+
+            switch (sectionType)
+            {
+                case SectionTypes.StartGrid:
+                    if ( details.direction == Heading.Nord || details.direction == Heading.South)
+                    {
+                        drawToConsole(_startGridVertical,pos);
+                    }
+                    else
+                    {
+                        drawToConsole(_startGridHorizontal,pos);
+                    }
                     break;
 
                 case SectionTypes.Straight:
-                  graphic =  (string[]) orientateGraphic(() => {
-                        return MyHeadings.current.Equals(Heading.Nord) ||
-                               MyHeadings.current.Equals(Heading.South) ? Graphics._straightVertical : Graphics._straightHorizontal;
-                    }).Clone();
+                    if (details.direction == Heading.Nord || details.direction == Heading.South)
+                    {
+                        drawToConsole(_straightVertical,pos);
+                    }
+                    else
+                    {
+                        drawToConsole(_straightHorizontal,pos);
+                    }
+
                     break;
 
                 case SectionTypes.Finish:
-                  graphic = (string[]) orientateGraphic(() => {
-                        return MyHeadings.current.Equals(Heading.Nord) ||
-                               MyHeadings.current.Equals(Heading.South) ? Graphics._finishVertical : Graphics._finishHorizontal;
-                    }).Clone();
+                    if (details.direction == Heading.Nord || details.direction == Heading.South)
+                    {
+                        drawToConsole(_finishVertical,pos);
+                    }
+                    else
+                    {
+                        drawToConsole(_finishHorizontal,pos);
+                    }
+
                     break;
-
-                default:
-                    // Err : unkown Section type 
-                    graphic = new string[] { "?" };
-                    break;
-            }
-        }
-
-        private static void ChangeHeading( ref SectionTypes sectionType)
-        {
-            if( sectionType == SectionTypes.LeftCorner)
-            {
-                MyHeadings.last = MyHeadings.current;
-                MyHeadings.current = MyHeadings.current.Equals(Heading.West) ? Heading.Nord : MyHeadings.current + 1;
-            } 
-
-            if( sectionType == SectionTypes.RightCorner)
-            {
-                MyHeadings.last = MyHeadings.current;
-                MyHeadings.current = MyHeadings.current.Equals(Heading.Nord)? Heading.West : MyHeadings.current - 1;
-            }
-        }
-
-        private static string[] orientateGraphic(chooseArtHeading chooseArt)
-        {
-            if (MyHeadings.last == Heading.South  || MyHeadings.last == Heading.West) 
-            {
-                return reverse(chooseArt()) ;
-            } else
-            {
-                return chooseArt();
             }
 
         }
 
-
-        private static string[] reverse(string[] k)
+        private static void drawToConsole(string[] graphic, (int x, int y) position, bool reversed = false)
         {
-            var result = new string[k.Length];
-            var stack = new Stack<string>();
-            foreach ( string s in k)
+            // At this point I can assume the x and y given to me are correct.
+            // Note: This might not work because the given y position is incorrect thus
+            // not drawing it correctly
+            Console.SetCursorPosition(position.x, position.y);
+            if ( reversed)
             {
-                stack.Push(s);
-            }
-
-            int c = 0;
-            while ( stack.Count > 0)
-            {
-                result[c]= stack.Pop();
-                c++;
-            }
-
-            if (MyHeadings.last == Heading.East)
-            {
-                for (int i = 0; i < result.Length; i++)
+                int line = 0;
+                for( int i = graphic.Length - 1 ; i > 0; i--)
                 {
-                    result[i] = (string) result[i].Reverse();
+                    Console.SetCursorPosition(position.x, position.y + line);
+                    Console.Write(graphic [i] );
+                    line++;
+
+                }
+                return;
+            }
+            else {
+                int line = 0;
+                foreach (var s in graphic)
+                {
+                    Console.SetCursorPosition(position.x, position.y + line);
+                    Console.Write(s);
+                    line++;
                 }
             }
+            
 
-            return result;
         }
 
-        // TODO/NOTE: We might want to move this to the DrawableSection class
-        private static void  drawPlaceholderOnStartgrid(ref DrawableSection section)
-        {
-            string[] startGrid = section.asciiArt;
-            // NOTE: add placeholder
-            if (ParticipantPlaceholder > Data.Competition.particpants.Count)
-            {
-                char[] temp = startGrid[3].ToCharArray();
-                temp[3] = '▓';
-                startGrid[3] = new string(temp);
-            }
-            else
-            {
+    }
 
-                char[] temp = startGrid[3].ToCharArray();
-                temp[3] = ParticipantPlaceholder.ToString()[0];
-                startGrid[3] = new string(temp);
-                ParticipantPlaceholder++;
-
-            }
-
-            if (ParticipantPlaceholder > Data.Competition.particpants.Count)
-            {
-                char[] temp = startGrid[1].ToCharArray();
-                temp[3] = '▓';
-                startGrid[1] = new string(temp);
-
-             
-            }
-            else
-            {
-                char[] temp = startGrid[1].ToCharArray();
-                temp[3] = ParticipantPlaceholder.ToString()[0];
-                startGrid[1] = new string(temp);
-                ParticipantPlaceholder++;
-
-
-
-            }
-
-            section.asciiArt = startGrid;
-        }
-
+    public struct SectionBuildingDetails
+    {
+        public const int SIZE_X = 5;
+        public const int SIZE_Y = 5;
+        public Section section;
+        public int x, y;
+        public Heading direction;
+        public Heading lastDirection;
     }
 }

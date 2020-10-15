@@ -1,24 +1,35 @@
-﻿using Microsoft.VisualBasic.FileIO;
-using Model;
+﻿using Model;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Timers;
 
 namespace Controller
 {
     public class Race
     {
+
         // Track van het type Track, Participants van het type List<IParticipant> en StartTime van het type DateTime
+        private const int TRACK_LENGTH = 5000;
+
         public Track Track;
+        
         private List<IParticpant> Particpants;
+        
         private DateTime StartTime;
+        
         private Random _random;
+        
         private Dictionary<Section, SectionData> _positions;
+        
         private Timer _timer;
+
+        public RaceData raceData;
+        
+        
         public event OnDriversChanged DriversChanged;
         public delegate void OnDriversChanged (object sender, DriversChangedEventArgs e );
+
+
 
         // Deze constructor heeft als parameters: Track en List<IParticipant>. Gebruik de parameters om de waarden van de properties Track en Participants te zetten.
         public Race(Track track, List<IParticpant> particpants)
@@ -28,6 +39,7 @@ namespace Controller
             _random = new Random(DateTime.Now.Millisecond);
             _positions = new Dictionary<Section, SectionData>();
             _timer = new Timer(500);
+            raceData = new RaceData();
             _timer.Elapsed += OnTimedEvent;
         }
 
@@ -40,8 +52,8 @@ namespace Controller
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             //Show time
-            Console.SetCursorPosition(0, 25);
-            Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
+           // Console.SetCursorPosition(0, 25);
+           // Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
 
             moveParticipants();
             Data.CurrentRace.DriversChanged.Invoke(Data.CurrentRace, new DriversChangedEventArgs(Data.CurrentRace.Track));
@@ -77,29 +89,54 @@ namespace Controller
                 SectionData data = data_lib[section];
 
                 // 
+                if( data.Left != null )
+                    data.DistanceLeft += (data.Left.Equipment as Car).getCarVelocity();
+                if( data.Right != null )
+                    data.DistanceRight += (data.Right.Equipment as Car).getCarVelocity();
+                // 
                 Track CurrentTrack = Data.CurrentRace.Track;
 
                 // next section with its section data.
                 Section nextSection = CurrentTrack.Sections.Find(section)?.Next?.Value;
                 // Might indicicate we were on the last section 
+                SectionData nextSection_data;
                 if (nextSection == null)
-                    continue;
-                SectionData nextSection_data = Data.CurrentRace.GetSectionData(nextSection);
-
-
-                if (data.DistanceLeft == 0 && nextSection_data.Left == null)
                 {
+                    // we finished a round on the circuit 
+                    nextSection_data = Data.CurrentRace.GetSectionData(CurrentTrack.Sections.First.Value);
 
+                    if (data.Left != null )
+                    {
+                        Data.CurrentRace.raceData.RondeToevoegen(data.Left);
+                    }
+                    if(data.Right != null )
+                    {
+                        Data.CurrentRace.raceData.RondeToevoegen(data.Right);
+                    }
+                }
+                else
+                {
+                    nextSection_data = Data.CurrentRace.GetSectionData(nextSection);
+                }
+                
+                
+
+                if (data.DistanceLeft >= TRACK_LENGTH && nextSection_data.Left == null)
+                {
                     // lets move left 
                     nextSection_data.Left = data.Left;
+                    data.DistanceLeft = 0;
                     data.Left = null;
                 }
 
-                if (data.DistanceRight == 0 && nextSection_data.Right == null)
+                if (data.DistanceRight >= TRACK_LENGTH && nextSection_data.Right == null)
                 {
                     nextSection_data.Right = data.Right;
+                    data.DistanceRight = 0;
                     data.Right = null;
                 }
+
+               
 
             }
 
