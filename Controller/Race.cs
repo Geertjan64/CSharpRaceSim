@@ -1,6 +1,7 @@
 ﻿using Model;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Timers;
 
 namespace Controller
@@ -8,7 +9,7 @@ namespace Controller
     public class Race
     {
 
-        private const int TRACK_LENGTH = 5000;
+        private const int TRACK_LENGTH = 1000;
 
         public Track Track;
         
@@ -53,11 +54,7 @@ namespace Controller
             if( Data.CurrentRace.raceData.FinishedParticipantCount() == Data.CurrentRace.Particpants.Count)
             {
                 // Race is finished 
-                Data.CurrentRace.RaceCleanup();
-                Data.NextRace();
-                Console.Clear();
-                Console.SetCursorPosition(Console.BufferWidth / 2, Console.BufferHeight / 2);
-                Console.WriteLine("Race has finished!");
+                Data.RaceFinished();
                 return;
             }
 
@@ -220,7 +217,6 @@ namespace Controller
 
         }
 
-
         public SectionData GetSectionData(Section section)
         {
             if (_positions.ContainsKey(section) == false) { 
@@ -245,7 +241,6 @@ namespace Controller
             _timer.Elapsed -= OnTimedEvent;
             DriversChanged = null;
         }
-
 
     }
 }

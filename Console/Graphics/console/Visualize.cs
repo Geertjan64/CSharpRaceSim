@@ -113,10 +113,19 @@ namespace ConsoleApp
         public static void Initialize()
         {
             Console.CursorVisible = false;
+            Console.Title = "Race Simulator"; 
             Data.CurrentRace.DriversChanged += OnDriversChanged;
+            Data.NewRace += onNewRace;
           //  Console.SetCursorPosition(0, 40);
           //  Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
           //  Console.WriteLine($"Racing on Track {Data.CurrentRace.Track.Name}");
+        }
+
+        private static void onNewRace(object sender, EventArgs e)
+        {
+            Data.CurrentRace.DriversChanged += OnDriversChanged;
+            Data.CurrentRace.PlaceParticipants();
+            Data.CurrentRace.Start();
         }
 
         public static void OnDriversChanged(object sender, DriversChangedEventArgs args)

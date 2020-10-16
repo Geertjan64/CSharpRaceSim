@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Model;
 
 namespace Controller
@@ -7,6 +8,9 @@ namespace Controller
     {
         public static Competition Competition { get; set; }
         public static Race CurrentRace { get; set; }
+
+        public delegate void OnNewRace (object sender , EventArgs e );
+        public static event OnNewRace NewRace;
 
         public static void Initialize()
         {
@@ -76,6 +80,18 @@ namespace Controller
                     SectionTypes.Straight
                     } 
                 )); 
+        }
+
+        public static void RaceFinished()
+        {
+            Race race = CurrentRace;
+            race.RaceCleanup();
+            NextRace();
+
+            Console.Clear();
+            Console.SetCursorPosition(Console.BufferWidth / 2, Console.BufferHeight / 2);
+            Console.WriteLine("Race has finished!");
+            NewRace.Invoke(race, new EventArgs());
         }
 
         public static void NextRace()
