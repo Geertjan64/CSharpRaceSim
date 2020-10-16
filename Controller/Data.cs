@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Model;
 
 namespace Controller
@@ -21,6 +19,9 @@ namespace Controller
                     new Driver("Daniel", 0, TeamColors.Red)
                 });
             AddTrack();
+            AddTrack();
+            AddTrack();
+
         }
 
         public static void AddParticipant()

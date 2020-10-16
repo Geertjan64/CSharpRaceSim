@@ -8,14 +8,13 @@ namespace Controller
     public class Race
     {
 
-        // Track van het type Track, Participants van het type List<IParticipant> en StartTime van het type DateTime
         private const int TRACK_LENGTH = 5000;
 
         public Track Track;
         
         private List<IParticpant> Particpants;
         
-        private DateTime StartTime;
+        //private DateTime StartTime;
         
         private Random _random;
         
@@ -25,20 +24,16 @@ namespace Controller
 
         public RaceData raceData;
         
-        
         public event OnDriversChanged DriversChanged;
         public delegate void OnDriversChanged (object sender, DriversChangedEventArgs e );
 
-
-
-        // Deze constructor heeft als parameters: Track en List<IParticipant>. Gebruik de parameters om de waarden van de properties Track en Participants te zetten.
         public Race(Track track, List<IParticpant> particpants)
         {
             Track = track;
             Particpants = particpants;
             _random = new Random(DateTime.Now.Millisecond);
             _positions = new Dictionary<Section, SectionData>();
-            _timer = new Timer(500);
+            _timer = new Timer(500); 
             raceData = new RaceData();
             _timer.Elapsed += OnTimedEvent;
         }
@@ -52,91 +47,140 @@ namespace Controller
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             //Show time
-           // Console.SetCursorPosition(0, 25);
+           // Console.SetCursorPosition(0, 54);
            // Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
+
+            if( Data.CurrentRace.raceData.FinishedParticipantCount() == Data.CurrentRace.Particpants.Count)
+            {
+                // Race is finished 
+                Data.CurrentRace.RaceCleanup();
+                Data.NextRace();
+                Console.Clear();
+                Console.SetCursorPosition(Console.BufferWidth / 2, Console.BufferHeight / 2);
+                Console.WriteLine("Race has finished!");
+                return;
+            }
+
 
             moveParticipants();
             Data.CurrentRace.DriversChanged.Invoke(Data.CurrentRace, new DriversChangedEventArgs(Data.CurrentRace.Track));
 
+
+
+        }
+
+        private static void getSectionsWithParticipants ( out Stack<Section> sections)
+        {
+            sections = new Stack<Section>();
+            foreach (Section sec in Data.CurrentRace.Track.Sections)
+            {
+                var section_data = Data.CurrentRace.GetSectionData(sec);
+                if (section_data.Left != null || section_data.Right != null)
+                {
+                    sections.Push(sec);
+                }
+            }
+
+        }
+
+        private static void FinishLap(SectionData section, bool RightSide = false )
+        {
+            if (RightSide)
+            {
+                Data.CurrentRace.raceData.RondeToevoegen(section.Right);
+                // if true we have completed the race 
+                if (Data.CurrentRace.raceData.GetRaceRondesVoor(section.Right) == 3)
+                {
+                    //Console.SetCursorPosition(0, 58);
+                    //Console.WriteLine($"{data.Right.Name} has finished the race!");
+                    Data.CurrentRace.raceData.ParticipantFinished(section.Right);
+                    section.Right = null;
+                }
+            }
+            else
+            {
+                Data.CurrentRace.raceData.RondeToevoegen(section.Left);
+                // if true we have completed the race 
+                if (Data.CurrentRace.raceData.GetRaceRondesVoor(section.Left) == 3)
+                {
+                    // Console.SetCursorPosition(0, 58);
+                    // Console.WriteLine($"{data.Left.Name} has finished the race!");
+                    Data.CurrentRace.raceData.ParticipantFinished(section.Left);
+                    section.Left = null;
+                }
+            }
         }
 
         public static void moveParticipants()
         {
-            // IMPORTANT: the leading participant in the race should be moved first.
-            // step 1 figure out where all participants are on the track
-            // step 2 check if they have been on the track long enough to go to the next 
-            // step 3 check if the next track has an empty spot.
-            // step 4 if not it stay where it is , if there is move to that spot
-            // step 5 render the tracks that have changed 
+            Stack<Section> SectionsWithParticipants ;
+            getSectionsWithParticipants(out SectionsWithParticipants);
 
-            var sections_with_player = new Stack<Section>();
-            var data_lib = new Dictionary<Section, SectionData>();
-
-            foreach (Section sec in Data.CurrentRace.Track.Sections)
-            {
-                SectionData data = Data.CurrentRace.GetSectionData(sec);
-                if (data.Left != null || data.Right != null)
-                {
-                    sections_with_player.Push(sec);
-                    data_lib.Add(sec, data);
-                }
-            }
-
-            while (sections_with_player.Count > 0)
+            while (SectionsWithParticipants.Count > 0)
             {
                 // Current section with its section data. 
-                Section section = sections_with_player.Pop();
-                SectionData data = data_lib[section];
+                Section section = SectionsWithParticipants.Pop();
+                SectionData data = Data.CurrentRace.GetSectionData(section);
 
-                // 
+                // increase distance traveled foreach participant 
                 if( data.Left != null )
                     data.DistanceLeft += (data.Left.Equipment as Car).getCarVelocity();
                 if( data.Right != null )
                     data.DistanceRight += (data.Right.Equipment as Car).getCarVelocity();
-                // 
+
                 Track CurrentTrack = Data.CurrentRace.Track;
-
-                // next section with its section data.
                 Section nextSection = CurrentTrack.Sections.Find(section)?.Next?.Value;
-                // Might indicicate we were on the last section 
-                SectionData nextSection_data;
-                if (nextSection == null)
-                {
-                    // we finished a round on the circuit 
-                    nextSection_data = Data.CurrentRace.GetSectionData(CurrentTrack.Sections.First.Value);
-
-                    if (data.Left != null )
-                    {
-                        Data.CurrentRace.raceData.RondeToevoegen(data.Left);
-                    }
-                    if(data.Right != null )
-                    {
-                        Data.CurrentRace.raceData.RondeToevoegen(data.Right);
-                    }
-                }
-                else
-                {
-                    nextSection_data = Data.CurrentRace.GetSectionData(nextSection);
-                }
-                
-                
-
-                if (data.DistanceLeft >= TRACK_LENGTH && nextSection_data.Left == null)
-                {
-                    // lets move left 
-                    nextSection_data.Left = data.Left;
-                    data.DistanceLeft = 0;
-                    data.Left = null;
-                }
-
-                if (data.DistanceRight >= TRACK_LENGTH && nextSection_data.Right == null)
-                {
-                    nextSection_data.Right = data.Right;
-                    data.DistanceRight = 0;
-                    data.Right = null;
-                }
-
+                SectionData nextSection_data =  nextSection == null ? 
+                    Data.CurrentRace.GetSectionData(CurrentTrack.Sections.First.Value) : 
+                    Data.CurrentRace.GetSectionData(nextSection);
                
+                if (data.DistanceLeft >= TRACK_LENGTH && data.Left != null )
+                {
+                    // if true we have done one lap 
+                    if (nextSection == null) {
+                        FinishLap(data);
+                    }
+                   
+                    // lets move 
+                    if (nextSection_data.Left == null)
+                    {
+                        nextSection_data.Left = data.Left;
+                        data.DistanceLeft = 0;
+                        data.Left = null;
+                    }
+                    else if( nextSection_data.Right == null)
+                    {
+                        nextSection_data.Right = data.Left;
+                        data.DistanceLeft = 0;
+                        data.Left = null;
+                    }
+                   
+                    
+                }
+
+                if (data.DistanceRight >= TRACK_LENGTH && data.Right != null)
+                {
+                    // if true we have finished a lap 
+                    if( nextSection == null )
+                    {
+                        FinishLap(data, true);
+                    }
+                    
+                   
+                    if ( nextSection_data.Right == null)
+                    {
+                        nextSection_data.Right = data.Right;
+                        data.DistanceRight = 0;
+                        data.Right = null;
+                    } else if ( nextSection_data.Left == null) {
+                        nextSection_data.Left = data.Right;
+                        data.DistanceRight = 0;
+                        data.Right = null;
+                    }
+                        
+                    
+                    
+                }
 
             }
 
@@ -154,8 +198,7 @@ namespace Controller
                     StartingGrid.Push(section);
                 }
             }
-
-
+            
             int Participantcount = 0;
             while ( StartingGrid.Count > 0 )
             {
@@ -188,8 +231,6 @@ namespace Controller
             return _positions[section];
         }
 
-        //Breid de klasse Race uit met een methode RandomizeEquipment.
-        //Itereer over alle deelnemers in de competitie.Geef de properties Quality en Performance van de property Equipment een willekeurige waarde.
         public void RadomizeEquipment()
         {
             foreach(IParticpant particpant in Particpants)
@@ -197,6 +238,12 @@ namespace Controller
                 particpant.Equipment.Quality = _random.Next();
                 particpant.Equipment.Performance = _random.Next();
             }
+        }
+
+        public void RaceCleanup()
+        {
+            _timer.Elapsed -= OnTimedEvent;
+            DriversChanged = null;
         }
 
 

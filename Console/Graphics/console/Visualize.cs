@@ -109,22 +109,20 @@ namespace ConsoleApp
         };
         #endregion
 
-        private static (Heading last, Heading current) MyHeadings;
-
-        private static int ParticipantPlaceholder;
-
+      
         public static void Initialize()
         {
             Console.CursorVisible = false;
             Data.CurrentRace.DriversChanged += OnDriversChanged;
-            // Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
-            // Console.WriteLine($"Racing on Track {Data.CurrentRace.Track.Name}");
+          //  Console.SetCursorPosition(0, 40);
+          //  Console.WriteLine($"Race has {Data.Competition.particpants.Count} participants");
+          //  Console.WriteLine($"Racing on Track {Data.CurrentRace.Track.Name}");
         }
 
         public static void OnDriversChanged(object sender, DriversChangedEventArgs args)
         {
-            // Console.SetCursorPosition(0, 27);
-            //  Console.Write($"OnDriversChanged in Visualize! { DateTime.Now}");
+            //Console.SetCursorPosition(0, 53);
+            //Console.Write($"OnDriversChanged in Visualize! { DateTime.Now}");
             DrawTrack(args.track);
         }
 
