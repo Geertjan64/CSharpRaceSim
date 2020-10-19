@@ -48,22 +48,88 @@ namespace Controller
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             //Show time
-           // Console.SetCursorPosition(0, 54);
-           // Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
+            Console.SetCursorPosition(70,0 );
+            Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
 
-            if( Data.CurrentRace.raceData.FinishedParticipantCount() == Data.CurrentRace.Particpants.Count)
+
+
+            if(isRaceFinished())
             {
                 // Race is finished 
                 Data.RaceFinished();
                 return;
             }
 
+            RandomBreakdown();
 
             moveParticipants();
             Data.CurrentRace.DriversChanged.Invoke(Data.CurrentRace, new DriversChangedEventArgs(Data.CurrentRace.Track));
 
+        }
+
+        private static void RandomBreakdown() 
+        {
+            var _random = new Random();
+            int line = 2;
+            foreach ( Driver d  in Data.CurrentRace.Particpants)
+            {
+                if (Data.CurrentRace.raceData.GetRaceRondesVoor(d as IParticpant) == 3)
+                    continue;
+                if (d.Equipment.IsBroken)
+                {
+                    // have we repaired 
+                    int base_chance_of_repair = 60;//80;
+                    int real_chance = base_chance_of_repair - (~d.Equipment.Quality);
+                    if( _random.Next(0, 100) < real_chance)
+                    {
+                        d.Equipment.IsBroken = false;
+                        Console.SetCursorPosition(70, line++);
+                        Console.WriteLine($"{d.Name}'s car has been repaired!");
+                    }
+                    continue;
+                }
+                int salt = (_random.Next() % 10)+1;
+                int chance =  100 * d.Equipment.Quality / salt ;
+                d.Equipment.IsBroken = (chance/ 4) > _random.Next(0, 1000);
+                if(d.Equipment.IsBroken)
+                {
+                    // Modify cars properties 
+                    int what_should_change = _random.Next(0, 6);
+
+                    switch (what_should_change)
+                    {
+                        case (1):
+                        case (3):
+                            // incapacitate Quality 
+                            d.Equipment.Quality -= 1;
+                            break;
+                        case (4):
+                        case (2):
+                            // incapacitate Performance
+                            d.Equipment.Quality -= 1;
+                            break;
+                        case (5):
+                            // incapacitate Speed and Quality
+                            d.Equipment.Speed -= 1;
+                            d.Equipment.Quality -= 1;
+                            break;
+                        case (6):
+                            // incapacitate Performance and Quality
+                            d.Equipment.Performance -= 1;
+                            d.Equipment.Quality -= 1;
+                            break;
+                    }
+                    Console.SetCursorPosition(70, line++);
+                    Console.WriteLine($"{d.Name}'s car has broken down!" );
+
+                }
+            }    
+        }
 
 
+        private static bool isRaceFinished()
+        {
+            return Data.CurrentRace.raceData.FinishedParticipantCount() == Data.CurrentRace.Particpants.Count;
         }
 
         private static void getSectionsWithParticipants ( out Stack<Section> sections)
@@ -118,11 +184,11 @@ namespace Controller
                 // Current section with its section data. 
                 Section section = SectionsWithParticipants.Pop();
                 SectionData data = Data.CurrentRace.GetSectionData(section);
-
+                
                 // increase distance traveled foreach participant 
-                if( data.Left != null )
+                if( data.Left != null && data.Left.Equipment.IsBroken == false)
                     data.DistanceLeft += (data.Left.Equipment as Car).getCarVelocity();
-                if( data.Right != null )
+                if( data.Right != null && data.Right.Equipment.IsBroken == false)
                     data.DistanceRight += (data.Right.Equipment as Car).getCarVelocity();
 
                 Track CurrentTrack = Data.CurrentRace.Track;
@@ -131,7 +197,7 @@ namespace Controller
                     Data.CurrentRace.GetSectionData(CurrentTrack.Sections.First.Value) : 
                     Data.CurrentRace.GetSectionData(nextSection);
                
-                if (data.DistanceLeft >= TRACK_LENGTH && data.Left != null )
+                if (data.DistanceLeft >= TRACK_LENGTH && data.Left != null && data.Left.Equipment.IsBroken == false)
                 {
                     // if true we have done one lap 
                     if (nextSection == null) {
@@ -155,7 +221,7 @@ namespace Controller
                     
                 }
 
-                if (data.DistanceRight >= TRACK_LENGTH && data.Right != null)
+                if (data.DistanceRight >= TRACK_LENGTH && data.Right != null && data.Right.Equipment.IsBroken == false)
                 {
                     // if true we have finished a lap 
                     if( nextSection == null )

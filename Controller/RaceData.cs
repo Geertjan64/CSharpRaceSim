@@ -60,6 +60,8 @@ namespace Controller
 
         public uint GetRaceRondesVoor(IParticpant particpant)
         {
+            if (_raceRondes == null)
+                return 0;
             if(_raceRondes.ContainsKey(particpant))
             {
                 return _raceRondes[particpant];

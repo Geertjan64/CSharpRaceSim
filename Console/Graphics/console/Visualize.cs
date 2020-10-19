@@ -24,88 +24,88 @@ namespace ConsoleApp
 
         public static string[] _startGridHorizontal = new string[]
         {
-                "---▓", // 0
-                "   ▓", // 1
-                "   ▓", // 2 
-                "   ▓", // 3
-                "---▓"  // 4
+                "═════", // 0
+                "   ┋ ", // 1
+                "   ┋ ", // 2 
+                "   ┋ ", // 3
+                "═════"  // 4
         };
         public static string[] _startGridVertical = new string[] {
-                "〓〓〓〓〓〓〓",
-                "|     |",
-                "|     |",
-                "|     |"
+                "║╍╍╍╍╍║",
+                "║     ║",
+                "║     ║",
+                "║     ║"
             };
 
         public static string[] _finishVertical = new string[]
         {
 
 
-                "|#####|",
-                "|     |",
-                "|     |",
-                "|     |"
+                "║▬▬▬▬▬║",
+                "║     ║",
+                "║     ║",
+                "║     ║"
         };
         public static string[] _finishHorizontal = new string[]
      {
-                "----",
-                "#   ",
-                "#   ",
-                "#   ",
-                "----"
+                "════",
+                "▐   ",
+                "▐   ",
+                "▐   ",
+                "════"
      };
 
         public static string[] _straightHorizontal = new string[]
       {
-                "----",
-                "    ",
-                "  - ",
-                "    ",
-                "----"
+                "═════",
+                "     ",
+                "  -  ",
+                "     ",
+                "═════"
       };
         public static string[] _straightVertical = new string[]
         {
-                "|  |  |",
-                "|     |",
-                "|     |",
-                "|  |  |"
+                "║  |  ║",
+                "║     ║",
+                "║     ║",
+                "║  |  ║"
 
          };
 
         // from nord
         public static string[] _TopRightCorner = new string[] {
-                "------/",
-                "      /",
-                "      |",
-                "      |",
-                "      |"
+                "══════╗",
+                "      ║",
+                "      ║",
+                "      ║",
+                "      ║"
         };
         
         public static string[] _TopLeftCorner = new string[]
         {
-                "/------",
-                "/      ",
-                "|      ",
-                "|      ",
-                "|      "
+                "╔═══════",
+                "║      ",
+                "║      ",
+                "║      ",
+                "║      "
         };
 
         // from south 
         public static string[] _BottomRightCorner = new string[]
         {
-            "       |",
-            "       |",
-            "       |",
-            "       |",
-            "-------/"
+            "       ║",
+            "       ║",
+            "       ║",
+            "       ║",
+            "═══════╝"
         };
         public static string[] _BottomLeftCorner = new string[]
         {
-            "|       ",
-            "|       ",
-            "|       ",
-            "|       ",
-            "\\-------"
+            "║       ",
+            "║       ",
+            "║       ",
+            "║       ",
+            "╚══════"
         };
         #endregion
 
@@ -113,7 +113,9 @@ namespace ConsoleApp
         public static void Initialize()
         {
             Console.CursorVisible = false;
-            Console.Title = "Race Simulator"; 
+            Console.Title = "Race Simulator";
+            Console.OutputEncoding = System.Text.Encoding.Default;
+
             Data.CurrentRace.DriversChanged += OnDriversChanged;
             Data.NewRace += onNewRace;
           //  Console.SetCursorPosition(0, 40);
@@ -153,12 +155,26 @@ namespace ConsoleApp
                     if (sbd.direction != Heading.South || sbd.direction != Heading.Nord)
                     {
                         Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 2, (sbd.y * SectionBuildingDetails.SIZE_Y) + 1);
-                        Console.Write(sd.Left.Name[0]);
+                        if (sd.Left.Equipment.IsBroken)
+                        {
+                            Console.Write("✶");
+                        }
+                        else
+                        {
+                            Console.Write(sd.Left.Name[0]);
+                        }
                     }
                     else
                     {
                         Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 1, (sbd.y * SectionBuildingDetails.SIZE_Y) + 2);
-                        Console.Write(sd.Left.Name[0]);
+                        if (sd.Left.Equipment.IsBroken)
+                        {
+                            Console.Write("✶");
+                        }
+                        else
+                        {
+                            Console.Write(sd.Left.Name[0]);
+                        }
                     }
                 }
 
@@ -167,13 +183,26 @@ namespace ConsoleApp
                     if (sbd.direction != Heading.South || sbd.direction != Heading.Nord)
                     {
                         Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 2, (sbd.y * SectionBuildingDetails.SIZE_Y) + 3);
-                        Console.Write(sd.Right.Name[0]);
+                        if (sd.Right.Equipment.IsBroken)
+                        {
+                            Console.Write("✶");
+                        }
+                        else
+                        {
+                            Console.Write(sd.Right.Name[0]);
+                        }
                     }
                     else
                     {
                         Console.SetCursorPosition((sbd.x * SectionBuildingDetails.SIZE_X) + 3, (sbd.y * SectionBuildingDetails.SIZE_Y) + 2);
-                        Console.Write(sd.Right.Name[0]);
-
+                        if (sd.Right.Equipment.IsBroken)
+                        {
+                            Console.Write("✶");
+                        }
+                        else
+                        {
+                            Console.Write(sd.Right.Name[0]);
+                        }
                     }
                 }
             }
