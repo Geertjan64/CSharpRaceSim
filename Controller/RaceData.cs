@@ -1,6 +1,8 @@
 ﻿using Model;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
 namespace Controller
 {
@@ -8,9 +10,14 @@ namespace Controller
     {
         private  Dictionary < IParticpant , uint > _raceRondes { get; set; }
         private List<IParticpant> FinishedParticipants;
+        private Dictionary<IParticpant, DateTime> FinishTime;
 
         public void ParticipantFinished(IParticpant particpant)
         {
+            if(FinishTime == null)
+            {
+                FinishTime = new Dictionary<IParticpant, DateTime>();
+            }
             if (FinishedParticipants == null)
             {
                 FinishedParticipants = new List<IParticpant>();
@@ -19,8 +26,16 @@ namespace Controller
             if(FinishedParticipants.Contains(particpant) == false)
             {
                 FinishedParticipants.Add(particpant);
+                FinishTime.Add(particpant, DateTime.Now);
             }
 
+        }
+
+        public DateTime getFinishTime(IParticpant p )
+        {
+            if (FinishedParticipants.Contains(p))
+                return FinishTime[p];
+            return DateTime.MinValue;
         }
 
         public int FinishedParticipantCount()

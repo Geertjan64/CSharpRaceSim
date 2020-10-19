@@ -17,7 +17,7 @@ namespace ControllerTest
 
         [Test]
         public void TimerGetsInitializedToFiveHundred() {
-            Data.CurrentRace.Timer;   
+            //Data.CurrentRace.Timer;   
         }
     }
 }

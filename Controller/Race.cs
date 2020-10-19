@@ -1,6 +1,7 @@
 ﻿using Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Timers;
 
@@ -56,6 +57,26 @@ namespace Controller
             if(isRaceFinished())
             {
                 // Race is finished 
+                (Driver p1, Driver p2, Driver p3) Winners = DetermineWinners();
+
+                // Show Winners 
+                const int LEFTPADDING = 50;
+                Console.SetCursorPosition(LEFTPADDING, 6);
+                Console.Write("♫DING DONG♫");
+                Console.SetCursorPosition(LEFTPADDING, 7);
+                Console.WriteLine("The race results are in!"); 
+                Console.SetCursorPosition(LEFTPADDING, 8);
+                Console.Write($"① {Winners.p1.Name} | Receiving 5 Points");
+                Console.SetCursorPosition(LEFTPADDING, 9);
+                Console.Write($"② {Winners.p2.Name} | Receiving 3 points");
+                Console.SetCursorPosition(LEFTPADDING, 10);
+                Console.Write($"③ {Winners.p3.Name} | Receiving 1 point");
+                Console.SetCursorPosition(LEFTPADDING, 11);
+                Console.Write("Press any  key to continue");
+                Console.ReadKey();
+
+                Data.Competition.distributePoints(Winners);
+
                 Data.RaceFinished();
                 return;
             }
@@ -65,6 +86,50 @@ namespace Controller
             moveParticipants();
             Data.CurrentRace.DriversChanged.Invoke(Data.CurrentRace, new DriversChangedEventArgs(Data.CurrentRace.Track));
 
+        }
+
+        public static (Driver first, Driver second, Driver third) DetermineWinners()
+        {
+            Driver first = null;
+            Driver second = null;
+            Driver third = null;
+
+            DateTime finishTime_first = DateTime.Now;
+            DateTime finishTime_second = DateTime.Now;
+            DateTime finishTime_third = DateTime.Now;
+
+
+            
+            foreach(Driver d in Data.CurrentRace.Particpants)
+            {
+                DateTime finishTime = Data.CurrentRace.raceData.getFinishTime(d);
+                if ( finishTime < finishTime_first)
+                {
+                    third = second;
+                    second = first;
+                    first = d;
+                    finishTime_third = finishTime_second;
+                    finishTime_second = finishTime_first;
+                    finishTime_first = finishTime;
+                    
+                } 
+                else if ( finishTime > finishTime_first && finishTime < finishTime_second )
+                {
+                    third = second;
+                    second = d;
+                    finishTime_third = finishTime_second;
+                    finishTime_second = finishTime;
+                    
+                } 
+                else if ( finishTime > finishTime_second && finishTime < finishTime_third )
+                {
+                    third = d;
+                    finishTime_third = finishTime;
+                    
+                }
+            }
+
+            return (first, second, third);
         }
 
         private static void RandomBreakdown() 
