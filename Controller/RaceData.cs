@@ -12,6 +12,25 @@ namespace Controller
         private List<IParticpant> FinishedParticipants;
         private Dictionary<IParticpant, DateTime> FinishTime;
 
+        private Dictionary<IParticpant, DateTime> LapStartTime;
+
+        public void AddLapStartTime(IParticpant p)
+        {
+            if (LapStartTime == null)
+                LapStartTime = new Dictionary<IParticpant, DateTime>();
+            if (LapStartTime.ContainsKey(p))
+                LapStartTime.Remove(p);
+
+            LapStartTime.Add(p, DateTime.Now);
+        }
+
+        public DateTime getLapStartTime(IParticpant p)
+        {
+            if (LapStartTime.ContainsKey(p))
+                return DateTime.MinValue;
+            return LapStartTime[p];
+        }
+
         public void ParticipantFinished(IParticpant particpant)
         {
             if(FinishTime == null)

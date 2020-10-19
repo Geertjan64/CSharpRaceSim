@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -11,11 +12,18 @@ namespace Model
         public Queue<Track> tracks { get; set; }
 
         public CompetitionData<ParticipantPoints> CompetitionPoints {get ; set;} 
+        public CompetitionData<ParticpantSectionTime> CompetitionSectionTimes { get; set; }
+
+        public CompetitionData<ParticipantLapTime> CompetitionLapTimes { get; set; }
+        public CompetitionData<ParticipantCrashes> CompetitionCrashes { get; set; }
 
         public Competition() {
             particpants = new List<IParticpant>();
             tracks = new Queue<Track>();
             CompetitionPoints = new CompetitionData<ParticipantPoints>();
+            CompetitionSectionTimes = new CompetitionData<ParticpantSectionTime>();
+            CompetitionLapTimes = new CompetitionData<ParticipantLapTime>();
+            CompetitionCrashes = new CompetitionData<ParticipantCrashes>();
         }
 
         public void distributePoints ((Driver p1, Driver p2, Driver p3) Winners)

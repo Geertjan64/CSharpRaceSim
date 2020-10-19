@@ -52,8 +52,6 @@ namespace Controller
             Console.SetCursorPosition(70,0 );
             Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
 
-
-
             if(isRaceFinished())
             {
                 // Race is finished 
@@ -82,7 +80,7 @@ namespace Controller
             }
 
             RandomBreakdown();
-
+            
             moveParticipants();
             Data.CurrentRace.DriversChanged.Invoke(Data.CurrentRace, new DriversChangedEventArgs(Data.CurrentRace.Track));
 
@@ -138,8 +136,10 @@ namespace Controller
             int line = 2;
             foreach ( Driver d  in Data.CurrentRace.Particpants)
             {
+                // Don't break if driver has finished race
                 if (Data.CurrentRace.raceData.GetRaceRondesVoor(d as IParticpant) == 3)
                     continue;
+
                 if (d.Equipment.IsBroken)
                 {
                     // have we repaired 
@@ -158,6 +158,14 @@ namespace Controller
                 d.Equipment.IsBroken = (chance/ 4) > _random.Next(0, 1000);
                 if(d.Equipment.IsBroken)
                 {
+
+                    Data.Competition.CompetitionCrashes.AddData(new ParticipantCrashes()
+                    {
+                        name = d.Name,
+                        TrackName = Data.CurrentRace.Track.Name,
+                        section = getSectionWithParticipant(d as IParticpant)
+                    });
+
                     // Modify cars properties 
                     int what_should_change = _random.Next(0, 6);
 
@@ -191,6 +199,17 @@ namespace Controller
             }    
         }
 
+        private static Section getSectionWithParticipant(IParticpant p)
+        {            
+            foreach ( Section s in Data.CurrentRace.Track.Sections)
+            {
+                var sd = Data.CurrentRace.GetSectionData(s);
+                if (sd.Left == p || sd.Right == p)
+                    return s;
+
+            }
+            return null;
+        }
 
         private static bool isRaceFinished()
         {
@@ -216,25 +235,59 @@ namespace Controller
             if (RightSide)
             {
                 Data.CurrentRace.raceData.RondeToevoegen(section.Right);
+
+                Data.Competition.CompetitionLapTimes.AddData(new ParticipantLapTime()
+                {
+                    naam = section.Right.Name,
+                    track = Data.CurrentRace.Track,
+                    time = Data.CurrentRace.raceData.getLapStartTime(section.Right) - DateTime.Now
+                });
+
+                Data.CurrentRace.raceData.AddLapStartTime(section.Right);
+
                 // if true we have completed the race 
                 if (Data.CurrentRace.raceData.GetRaceRondesVoor(section.Right) == 3)
                 {
                     //Console.SetCursorPosition(0, 58);
                     //Console.WriteLine($"{data.Right.Name} has finished the race!");
                     Data.CurrentRace.raceData.ParticipantFinished(section.Right);
+                    Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
+                    {
+                        naam = section.Right.Name,
+                        section = Data.CurrentRace.Track.Sections.Last.Value,
+                        time = section.RightEnterTime - DateTime.Now
+                    }) ;
                     section.Right = null;
+                    section.DistanceRight = 0;
+                    
                 }
+                
             }
             else
             {
                 Data.CurrentRace.raceData.RondeToevoegen(section.Left);
+                Data.Competition.CompetitionLapTimes.AddData(new ParticipantLapTime()
+                {
+                    naam = section.Left.Name,
+                    track = Data.CurrentRace.Track,
+                    time = Data.CurrentRace.raceData.getLapStartTime(section.Left) - DateTime.Now
+                });
+                Data.CurrentRace.raceData.AddLapStartTime(section.Left);
+
                 // if true we have completed the race 
                 if (Data.CurrentRace.raceData.GetRaceRondesVoor(section.Left) == 3)
                 {
                     // Console.SetCursorPosition(0, 58);
                     // Console.WriteLine($"{data.Left.Name} has finished the race!");
                     Data.CurrentRace.raceData.ParticipantFinished(section.Left);
+                    Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
+                    {
+                        naam = section.Left.Name,
+                        section = Data.CurrentRace.Track.Sections.Last.Value,
+                        time = section.LeftEnterTime - DateTime.Now
+                    });
                     section.Left = null;
+                    section.DistanceLeft = 0;
                 }
             }
         }
@@ -268,20 +321,38 @@ namespace Controller
                     if (nextSection == null) {
                         FinishLap(data);
                     }
+                    else
+                    {
+                        // lets move 
+                        if (nextSection_data.Left == null)
+                        {
+                            Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
+                            {
+                                naam = data.Left.Name,
+                                section = section,
+                                time = data.LeftEnterTime - DateTime.Now
+                            });
+                            nextSection_data.Left = data.Left;
+                            nextSection_data.LeftEnterTime = DateTime.Now;
+                            data.DistanceLeft = 0;
+                            data.Left = null;
+                        }
+                        else if (nextSection_data.Right == null)
+                        {
+                            Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
+                            {
+                                naam = data.Left.Name,
+                                section = section,
+                                time = data.LeftEnterTime - DateTime.Now
+                            });
+                            nextSection_data.RightEnterTime = DateTime.Now;
+                            nextSection_data.Right = data.Left;
+                            data.DistanceLeft = 0;
+                            data.Left = null;
+                        }
+                    }
                    
-                    // lets move 
-                    if (nextSection_data.Left == null)
-                    {
-                        nextSection_data.Left = data.Left;
-                        data.DistanceLeft = 0;
-                        data.Left = null;
-                    }
-                    else if( nextSection_data.Right == null)
-                    {
-                        nextSection_data.Right = data.Left;
-                        data.DistanceLeft = 0;
-                        data.Left = null;
-                    }
+                   
                    
                     
                 }
@@ -293,21 +364,37 @@ namespace Controller
                     {
                         FinishLap(data, true);
                     }
-                    
-                   
-                    if ( nextSection_data.Right == null)
+                    else
                     {
-                        nextSection_data.Right = data.Right;
-                        data.DistanceRight = 0;
-                        data.Right = null;
-                    } else if ( nextSection_data.Left == null) {
-                        nextSection_data.Left = data.Right;
-                        data.DistanceRight = 0;
-                        data.Right = null;
+                        if (nextSection_data.Right == null)
+                        {
+                            Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
+                            {
+                                naam = data.Right.Name,
+                                section = section,
+                                time = data.RightEnterTime - DateTime.Now
+                            });
+                            nextSection_data.RightEnterTime = DateTime.Now;
+                            nextSection_data.Right = data.Right;
+                            data.DistanceRight = 0;
+                            data.Right = null;
+                        }
+
+                        else if (nextSection_data.Left == null)
+                        {
+                            Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
+                            {
+                                naam = data.Right.Name,
+                                section = section,
+                                time = data.RightEnterTime - DateTime.Now
+                            });
+                            nextSection_data.LeftEnterTime = DateTime.Now;
+                            nextSection_data.Left = data.Right;
+                            data.DistanceRight = 0;
+                            data.Right = null;
+                        }
                     }
-                        
-                    
-                    
+                   
                 }
 
             }
@@ -335,12 +422,16 @@ namespace Controller
 
                 if (Particpants.Count - Participantcount > 0)
                 {
+                    Data.CurrentRace.raceData.AddLapStartTime(Particpants[Participantcount]);
                     data.Left = Particpants[Participantcount];
+                    data.LeftEnterTime = DateTime.Now;
                     Participantcount++;
                 }
                 if (Particpants.Count - Participantcount > 0)
                 {
+                    Data.CurrentRace.raceData.AddLapStartTime(Particpants[Participantcount]);
                     data.Right = Particpants[Participantcount];
+                    data.RightEnterTime = DateTime.Now;
                     Participantcount++;
                 }
                 
