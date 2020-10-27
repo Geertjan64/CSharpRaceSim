@@ -28,9 +28,9 @@ namespace Model
 
         public void distributePoints ((Driver p1, Driver p2, Driver p3) Winners)
         {
-            CompetitionPoints.AddData(new ParticipantPoints() { points = 5, Name = Winners.p1.Name } );
-            CompetitionPoints.AddData(new ParticipantPoints() { points = 3, Name = Winners.p2.Name } );
-            CompetitionPoints.AddData(new ParticipantPoints() { points = 1, Name = Winners.p3.Name } );
+            CompetitionPoints.AddData(new ParticipantPoints() { Points = 5, Name = Winners.p1.Name } );
+            CompetitionPoints.AddData(new ParticipantPoints() { Points = 3, Name = Winners.p2.Name } );
+            CompetitionPoints.AddData(new ParticipantPoints() { Points = 1, Name = Winners.p3.Name } );
 
         }
 

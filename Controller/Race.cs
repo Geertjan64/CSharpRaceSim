@@ -161,7 +161,7 @@ namespace Controller
 
                     Data.Competition.CompetitionCrashes.AddData(new ParticipantCrashes()
                     {
-                        name = d.Name,
+                        Name = d.Name,
                         TrackName = Data.CurrentRace.Track.Name,
                         section = getSectionWithParticipant(d as IParticpant)
                     });
