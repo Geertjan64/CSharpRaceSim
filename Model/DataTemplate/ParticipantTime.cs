@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Model
 {
-    public class ParticipantTime
+    public class ParticipantTime : ParticipantStatistic
     {
-        public string naam { get; set; }
+        public string Name { get; set; }
         public  TimeSpan time { get; set; }
     }
 }

@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Model
 {
-    public class ParticipantPoints
+    public class ParticipantPoints : ParticipantStatistic
     {
-        public string naam { get; set; }
+        public string Name { get; set; }
         public int points { get;  set; }
     }
 }

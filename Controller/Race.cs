@@ -238,7 +238,7 @@ namespace Controller
 
                 Data.Competition.CompetitionLapTimes.AddData(new ParticipantLapTime()
                 {
-                    naam = section.Right.Name,
+                    Name = section.Right.Name,
                     track = Data.CurrentRace.Track,
                     time = Data.CurrentRace.raceData.getLapStartTime(section.Right) - DateTime.Now
                 });
@@ -253,7 +253,7 @@ namespace Controller
                     Data.CurrentRace.raceData.ParticipantFinished(section.Right);
                     Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
                     {
-                        naam = section.Right.Name,
+                        Name = section.Right.Name,
                         section = Data.CurrentRace.Track.Sections.Last.Value,
                         time = section.RightEnterTime - DateTime.Now
                     }) ;
@@ -268,7 +268,7 @@ namespace Controller
                 Data.CurrentRace.raceData.RondeToevoegen(section.Left);
                 Data.Competition.CompetitionLapTimes.AddData(new ParticipantLapTime()
                 {
-                    naam = section.Left.Name,
+                    Name = section.Left.Name,
                     track = Data.CurrentRace.Track,
                     time = Data.CurrentRace.raceData.getLapStartTime(section.Left) - DateTime.Now
                 });
@@ -282,7 +282,7 @@ namespace Controller
                     Data.CurrentRace.raceData.ParticipantFinished(section.Left);
                     Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
                     {
-                        naam = section.Left.Name,
+                        Name = section.Left.Name,
                         section = Data.CurrentRace.Track.Sections.Last.Value,
                         time = section.LeftEnterTime - DateTime.Now
                     });
@@ -328,7 +328,7 @@ namespace Controller
                         {
                             Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
                             {
-                                naam = data.Left.Name,
+                                Name = data.Left.Name,
                                 section = section,
                                 time = data.LeftEnterTime - DateTime.Now
                             });
@@ -341,7 +341,7 @@ namespace Controller
                         {
                             Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
                             {
-                                naam = data.Left.Name,
+                                Name = data.Left.Name,
                                 section = section,
                                 time = data.LeftEnterTime - DateTime.Now
                             });
@@ -370,7 +370,7 @@ namespace Controller
                         {
                             Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
                             {
-                                naam = data.Right.Name,
+                                Name = data.Right.Name,
                                 section = section,
                                 time = data.RightEnterTime - DateTime.Now
                             });
@@ -384,7 +384,7 @@ namespace Controller
                         {
                             Data.Competition.CompetitionSectionTimes.AddData(new ParticpantSectionTime()
                             {
-                                naam = data.Right.Name,
+                                Name = data.Right.Name,
                                 section = section,
                                 time = data.RightEnterTime - DateTime.Now
                             });
