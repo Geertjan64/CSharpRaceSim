@@ -88,9 +88,9 @@ namespace Controller
             race.RaceCleanup();
             NextRace();
 
-            Console.Clear();
-            Console.SetCursorPosition(Console.BufferWidth / 2, Console.BufferHeight / 2);
-            Console.WriteLine("Race has finished!");
+            //Console.Clear();
+            //Console.SetCursorPosition(Console.BufferWidth / 2, Console.BufferHeight / 2);
+            //Console.WriteLine("Race has finished!");
             NewRace.Invoke(race, new EventArgs());
         }
 

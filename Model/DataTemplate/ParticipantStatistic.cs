@@ -10,6 +10,7 @@ namespace Model
 
 
         public abstract void Add<T>( List<T> lijst  ) where T : class, ParticipantStatistic ;
+        public abstract String FindBest<T>(List<T> lijst ) where T : class, ParticipantStatistic;
     }
 }
  

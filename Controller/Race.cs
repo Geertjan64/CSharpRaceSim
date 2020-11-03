@@ -49,8 +49,8 @@ namespace Controller
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             //Show time
-            Console.SetCursorPosition(70,0 );
-            Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
+            //Console.SetCursorPosition(70,0 );
+            //Console.WriteLine("The Elapsed event was last raised at {0:HH:mm:ss.fff}", e.SignalTime);
 
             if(isRaceFinished())
             {
@@ -59,7 +59,7 @@ namespace Controller
 
                 // Show Winners 
                 const int LEFTPADDING = 50;
-                Console.SetCursorPosition(LEFTPADDING, 6);
+                /*Console.SetCursorPosition(LEFTPADDING, 6);
                 Console.Write("♫DING DONG♫");
                 Console.SetCursorPosition(LEFTPADDING, 7);
                 Console.WriteLine("The race results are in!"); 
@@ -71,7 +71,7 @@ namespace Controller
                 Console.Write($"③ {Winners.p3.Name} | Receiving 1 point");
                 Console.SetCursorPosition(LEFTPADDING, 11);
                 Console.Write("Press any  key to continue");
-                Console.ReadKey();
+                Console.ReadKey();*/
 
                 Data.Competition.distributePoints(Winners);
 
@@ -148,8 +148,8 @@ namespace Controller
                     if( _random.Next(0, 100) < real_chance)
                     {
                         d.Equipment.IsBroken = false;
-                        Console.SetCursorPosition(70, line++);
-                        Console.WriteLine($"{d.Name}'s car has been repaired!");
+                      /*  Console.SetCursorPosition(70, line++);
+                        Console.WriteLine($"{d.Name}'s car has been repaired!");*/
                     }
                     continue;
                 }
@@ -192,8 +192,8 @@ namespace Controller
                             d.Equipment.Quality -= 1;
                             break;
                     }
-                    Console.SetCursorPosition(70, line++);
-                    Console.WriteLine($"{d.Name}'s car has broken down!" );
+                    /*Console.SetCursorPosition(70, line++);
+                    Console.WriteLine($"{d.Name}'s car has broken down!" );*/
 
                 }
             }    

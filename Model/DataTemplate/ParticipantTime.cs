@@ -14,5 +14,11 @@ namespace Model
            // do nothing  for now 
            // lijst.Add( this);
         }
+
+        string ParticipantStatistic.FindBest<T>(List<T> lijst)
+        {
+            // TODO: implement this feature
+            return "Onbekend";
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Model
@@ -20,6 +21,24 @@ namespace Model
             {
                 l.Add(this);
             }
+        }
+
+        public string FindBest<T>(List<T> lijst) where T : class, ParticipantStatistic
+        {
+            (string naam , int points) mostPoints = ("Onbekend", 0);
+            foreach ( var p in lijst)
+            {
+                if (p is ParticipantPoints)
+                {
+                    if ( (p as ParticipantPoints).Points > mostPoints.points)
+                    {
+                        mostPoints.points = (p as ParticipantPoints).Points;
+                        mostPoints.naam = (p as ParticipantPoints).Name;
+                    }
+                }
+            }
+
+            return mostPoints.naam;
         }
     }
 }
